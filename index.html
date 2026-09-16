@@ -895,7 +895,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     </div>
     <div class="card-body">
       <p style="font-size:12.5px;color:var(--gc);margin-bottom:12px;line-height:1.6">
-        GabGate uses <strong style="color:var(--ac2)">Google Gemini 2.5 Flash</strong> with built-in web search to automatically fetch team form, SoT, season records and H2H data from ESPN, FotMob, Sofascore, FBref and more — and pre-fill every input field for you.<br><br>
+        GabGate uses <strong style="color:var(--ac2)">Google Gemini 3.6 Flash</strong> with built-in web search to automatically fetch team form, SoT, season records and H2H data from ESPN, FotMob, Sofascore, FBref and more — and pre-fill every input field for you.<br><br>
         Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#C4B5FD;text-decoration:underline">aistudio.google.com/apikey</a> (Google AI Studio — free tier, no card required).
       </p>
       <label class="field-label">Gemini API Key</label>
@@ -2442,7 +2442,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 // ═══════════════════════════════════════════════════════════════════════
 // GEMINI AUTOFILL ENGINE — GabGate v1.2
-// Uses Gemini 2.5 Flash with Google Search grounding to fetch team data
+// Uses Gemini 3.6 Flash with Google Search grounding to fetch team data
 // ═══════════════════════════════════════════════════════════════════════
 
 // ── API KEY MANAGEMENT ──
@@ -2492,7 +2492,7 @@ async function testApiConnection() {
   try {
     const resp = await callGemini('Say exactly: GABGATE_OK', false, key);
     if (resp.includes('GABGATE_OK')) {
-      chip.className = 'api-status-chip ok'; chip.innerHTML = '✅ &nbsp;Connected — Gemini 2.5 Flash responding';
+      chip.className = 'api-status-chip ok'; chip.innerHTML = '✅ &nbsp;Connected — Gemini 3.6 Flash responding';
       result.style.color = 'var(--gf)'; result.textContent = '✅ Connection successful. Autofill is ready to use.';
     } else {
       throw new Error('Unexpected response: ' + resp.slice(0,100));
@@ -2583,18 +2583,18 @@ Schema:
   "homeTeam": "${nameA}",
   "awayTeam": "${nameB}",
   "homeForm": [
-    {"gf":2,"ga":1,"venue":"H","opponent":"Real Madrid","date":"15 Jun 2025"},
-    {"gf":0,"ga":0,"venue":"A","opponent":"Barcelona","date":"08 Jun 2025"}
+    {"gf":2,"ga":1,"venue":"H","opponent":"Real Madrid","date":"15 Jun 2026"},
+    {"gf":0,"ga":0,"venue":"A","opponent":"Barcelona","date":"08 Jun 2026"}
   ],
   "awayForm": [
-    {"gf":1,"ga":2,"venue":"A","opponent":"Arsenal","date":"14 Jun 2025"}
+    {"gf":1,"ga":2,"venue":"A","opponent":"Arsenal","date":"14 Jun 2026"}
   ],
   "homeStanding": {"pos":3,"mp":28,"w":16,"d":6,"l":6,"totalTeams":20},
   "awayStanding": {"pos":9,"mp":28,"w":11,"d":8,"l":9,"totalTeams":20},
   "h2h": [
-    {"homeScore":2,"awayScore":1,"date":"10 Jan 2025","homeTeam":"${nameA}","venue":"H"},
-    {"homeScore":1,"awayScore":1,"date":"20 Sep 2024","homeTeam":"${nameB}","venue":"A"},
-    {"homeScore":0,"awayScore":0,"date":"15 Mar 2024","homeTeam":"neutral","venue":"N"}
+    {"homeScore":2,"awayScore":1,"date":"10 Jan 2026","homeTeam":"${nameA}","venue":"H"},
+    {"homeScore":1,"awayScore":1,"date":"20 Sep 2025","homeTeam":"${nameB}","venue":"A"},
+    {"homeScore":0,"awayScore":0,"date":"15 Mar 2025","homeTeam":"neutral","venue":"N"}
   ],
   "confidence": "HIGH",
   "notes": "brief note"
@@ -2611,6 +2611,7 @@ RULES:
   Europa League, World Cup, Friendlies etc.) — in these competitions teams from different
   divisions/countries play each other and league position is meaningless.
 - Only fill standing fields for proper league fixtures where BOTH teams play in the SAME league.
+- League standing (Played, Won, Drawn, Lost, League Position) MUST reflect the current 2026/2027 season league table.
 - Do NOT invent scores. If fewer than 6 matches found, include only real ones.
 - Return ONLY the raw JSON object.`;
 
@@ -2647,8 +2648,8 @@ ${matchList}
 Return ONLY a raw JSON array — NO markdown fences, NO backticks, NO explanation.
 Each entry must follow this exact format:
 [
-  {"team":"${nameA}","opponent":"Real Madrid","date":"15 Jun 2025","sot":5},
-  {"team":"${nameA}","opponent":"Barcelona","date":"08 Jun 2025","sot":3},
+  {"team":"${nameA}","opponent":"Real Madrid","date":"15 Jun 2026","sot":5},
+  {"team":"${nameA}","opponent":"Barcelona","date":"08 Jun 2026","sot":3},
   ...
 ]
 
