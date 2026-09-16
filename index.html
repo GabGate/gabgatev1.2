@@ -1,0 +1,3152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0A1410">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GabGate">
+<meta name="description" content="GabGate Soccer Analyzer — Dixon-Coles xG Engine for 1X2, Over/Under, BTTS, Handicap & Correct Score across 60+ leagues worldwide">
+<link rel="manifest" href="manifest.json">
+<title>⚽ GabGate v1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --dn: #0A1410;
+  --nv: #0F1F19;
+  --bl: #163428;
+  --mb: #1B5C3F;
+  --lb: #279966;
+  --ac: #F5A623;
+  --ac2: #FFC656;
+  --gd: #166534;
+  --gc: #DCFCE7;
+  --gf: #2FD480;
+  --yd: #92400E;
+  --yc: #FEF9C3;
+  --yf: #FFB23E;
+  --rd: #7A1F2B;
+  --rc: #FEE2E2;
+  --rf: #F0506A;
+  --pu: #7C5CFF;
+  --pc: #EDE9FE;
+  --or: #EA580C;
+  --wh: #FFFFFF;
+  --ow: #F7FBF9;
+  --lg: #1E3A2C;
+  --mg: #8FAE9C;
+  --dg: #25433A;
+  --ib: #0E2A20;
+  --cb: #0E2418;
+  --ob: #2A1E0E;
+  --safe: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--dn);
+  color: var(--wh);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: calc(70px + var(--safe));
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(135deg, var(--dn) 0%, #0C1F17 100%);
+  border-bottom: 2px solid var(--ac);
+  padding: 10px 16px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px; font-weight: 900;
+  color: var(--ac); letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.topbar-sub { font-size: 10px; color: var(--mg); margin-top: 1px; }
+.topbar-badge {
+  background: var(--ac); color: var(--dn);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; font-weight: 800;
+  padding: 3px 8px; border-radius: 20px;
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: linear-gradient(180deg, #08120D 0%, var(--dn) 100%);
+  border-top: 1px solid #1A3328;
+  display: flex;
+  padding-bottom: var(--safe);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 8px 4px; border: none; background: none;
+  color: var(--mg); cursor: pointer;
+  transition: color .2s; font-family: 'Barlow', sans-serif;
+}
+.nav-btn.active { color: var(--ac); }
+.nav-btn .nav-icon { font-size: 20px; line-height: 1; }
+.nav-btn .nav-label { font-size: 10px; font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── PAGES ── */
+.page { display: none; padding: 12px; }
+.page.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: linear-gradient(135deg, var(--nv) 0%, #0D1F17 100%);
+  border: 1px solid #1C3A2C;
+  border-radius: 12px; margin-bottom: 12px;
+  overflow: hidden;
+}
+.card-header {
+  background: linear-gradient(135deg, var(--bl) 0%, var(--mb) 100%);
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-header.amber { background: linear-gradient(135deg, #92400E 0%, #B45309 100%); }
+.card-header.green { background: linear-gradient(135deg, #14532D 0%, #166534 100%); }
+.card-header.purple { background: linear-gradient(135deg, #4C1D95 0%, #6D28D9 100%); }
+.card-header.red { background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%); }
+.card-header.gold { background: linear-gradient(135deg, #92600E 0%, #C8860C 100%); }
+.card-header-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.card-body { padding: 12px; }
+
+/* ── LEAGUE / SELECT ── */
+.select-wrap { position: relative; }
+.gg-select {
+  width: 100%; padding: 10px 36px 10px 12px;
+  background: var(--ib); border: 2px solid var(--mb);
+  border-radius: 8px; color: var(--gc);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px; font-weight: 700;
+  appearance: none; -webkit-appearance: none;
+  cursor: pointer;
+}
+.select-arrow {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--lb); pointer-events: none; font-size: 14px;
+}
+
+/* ── LABELS / INPUTS ── */
+.field-label {
+  font-size: 11px; font-weight: 700; color: var(--mg);
+  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; display: block;
+}
+.gg-input {
+  width: 100%; padding: 9px 10px;
+  background: var(--ib); border: 1.5px solid var(--dg);
+  border-radius: 7px; color: var(--wh);
+  font-family: 'Barlow', sans-serif; font-size: 14px;
+}
+.gg-input:focus { outline: none; border-color: var(--ac); }
+.gg-input::placeholder { color: #4D6B5C; }
+
+/* ── TEAM HEADER ── */
+.team-header {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.team-header.a { color: var(--ac); }
+.team-header.b { color: var(--lb); }
+
+/* ── GAME ROW GRID ── */
+.game-row {
+  display: grid; grid-template-columns: 22px 1fr 1fr 1fr 1fr 1fr;
+  gap: 6px; align-items: center; margin-bottom: 6px;
+}
+.game-row-label { font-size: 11px; color: var(--mg); font-weight: 700; }
+.game-row .gg-input { padding: 7px 4px; font-size: 13px; text-align: center; }
+.col-headers {
+  display: grid; grid-template-columns: 22px 1fr 1fr 1fr 1fr 1fr;
+  gap: 6px; margin-bottom: 6px;
+}
+.col-headers span { font-size: 9px; color: var(--mg); text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; }
+.toggle-label { font-size: 13px; font-weight: 600; color: var(--gc); }
+.toggle-sub { font-size: 10.5px; color: var(--mg); margin-top: 1px; }
+
+.switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background: var(--dg); border-radius: 26px; transition: .2s; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: var(--ow); border-radius: 50%; transition: .2s; }
+input:checked + .slider { background: var(--pu); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+.data-check { font-size: 11.5px; padding: 6px 10px; border-radius: 6px; margin-top: 6px; font-weight: 600; }
+.data-check.ok { background: rgba(47,212,128,.12); color: var(--gf); }
+.data-check.bad { background: rgba(240,80,106,.12); color: var(--rf); }
+
+/* ── BUTTONS ── */
+.btn {
+  width: 100%; padding: 13px; border: none; border-radius: 10px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+  transition: transform .1s, opacity .15s;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: linear-gradient(135deg, var(--ac) 0%, var(--ac2) 100%); color: var(--dn); }
+.btn-secondary { background: var(--bl); color: var(--gc); border: 1px solid var(--mb); }
+.btn-purple { background: linear-gradient(135deg, #6D28D9 0%, #7C5CFF 100%); color: #fff; }
+.btn-ghost { background: transparent; color: var(--mg); border: 1px solid var(--dg); }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-sm { padding: 8px 10px; font-size: 12px; }
+
+/* ── CHIPS / BADGES ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: .4px;
+}
+.chip.purple { background: rgba(124,92,255,.18); color: #C4B5FD; }
+.chip.amber { background: rgba(245,166,35,.16); color: var(--ac2); }
+.chip.green { background: rgba(47,212,128,.14); color: var(--gf); }
+
+/* ── ALERTS ── */
+.alert-item {
+  display: flex; gap: 8px; padding: 9px 10px;
+  border-radius: 8px; margin-bottom: 6px; font-size: 12.5px; line-height: 1.4;
+}
+.alert-item.warn { background: rgba(255,178,62,.10); border-left: 3px solid var(--yf); color: var(--yc); }
+.alert-item.ok { background: rgba(47,212,128,.07); border-left: 3px solid var(--gf); color: #B9F2D6; }
+.alert-item.info { background: rgba(124,92,255,.10); border-left: 3px solid var(--pu); color: var(--pc); }
+.alert-label { font-weight: 800; margin-right: 6px; }
+
+/* ── SCORE DISPLAY ── */
+.score-display { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.score-box { background: var(--ib); border-radius: 10px; padding: 12px 6px; text-align: center; border: 1px solid var(--dg); }
+.score-box.combined { background: linear-gradient(135deg, rgba(245,166,35,.15), rgba(255,198,86,.08)); border-color: var(--ac); }
+.score-box-label { font-size: 9px; color: var(--mg); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+.score-box-name { font-size: 11px; color: var(--gc); font-weight: 700; margin: 2px 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.score-box-number { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 900; color: var(--wh); }
+.score-box-denom { font-size: 13px; color: var(--mg); font-weight: 600; }
+
+.classification {
+  text-align: center; padding: 12px; border-radius: 10px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 800;
+  letter-spacing: .5px; margin-bottom: 12px;
+}
+.classification.home { background: rgba(245,166,35,.15); color: var(--ac2); border: 1.5px solid var(--ac); }
+.classification.draw { background: rgba(143,174,156,.15); color: var(--mg); border: 1.5px solid var(--mg); }
+.classification.away { background: rgba(39,153,102,.18); color: var(--lb); border: 1.5px solid var(--lb); }
+.classification.invalid { background: rgba(240,80,106,.10); color: var(--rf); border: 1.5px solid var(--rf); }
+
+/* ── MARKET GRID ── */
+.market-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.market-cell { background: var(--ib); border: 1px solid var(--dg); border-radius: 8px; padding: 8px 6px; text-align: center; }
+.market-cell.best { border-color: var(--ac); background: rgba(245,166,35,.10); }
+.market-cell-label { font-size: 9.5px; color: var(--mg); text-transform: uppercase; font-weight: 700; letter-spacing: .3px; }
+.market-cell-val { font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800; color: var(--wh); margin-top: 2px; }
+.market-cell.best .market-cell-val { color: var(--ac2); }
+
+.market-bar-row { margin-bottom: 10px; }
+.market-bar-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+.market-bar-head .nm { color: var(--gc); font-weight: 600; }
+.market-bar-head .pc { color: var(--ac2); font-weight: 800; font-family: 'Barlow Condensed', sans-serif; }
+.market-bar-track { height: 8px; background: var(--ib); border-radius: 5px; overflow: hidden; }
+.market-bar-fill { height: 100%; background: linear-gradient(90deg, var(--mb), var(--lb)); border-radius: 5px; }
+
+.scoreline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.scoreline-cell { background: var(--ib); border: 1px solid var(--dg); border-radius: 8px; padding: 8px; text-align: center; }
+.scoreline-score { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--wh); }
+.scoreline-pct { font-size: 11px; color: var(--ac2); font-weight: 700; margin-top: 2px; }
+
+/* ── RATING GRID ── */
+.rating-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rating-item { background: var(--ib); border: 1px solid var(--dg); border-radius: 8px; padding: 8px 10px; }
+.rating-item-label { font-size: 10.5px; color: var(--mg); margin-bottom: 4px; font-weight: 600; }
+.rating-item-bar { display: flex; align-items: center; gap: 6px; }
+.rating-bar-track { flex: 1; height: 6px; background: var(--dg); border-radius: 4px; overflow: hidden; }
+.rating-bar-fill { height: 100%; background: linear-gradient(90deg, var(--mb), var(--ac)); border-radius: 4px; }
+.rating-score { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; color: var(--wh); }
+.rating-max { font-size: 11px; color: var(--mg); }
+
+.tab-row { display: flex; gap: 6px; margin-bottom: 10px; }
+.tab-btn {
+  flex: 1; padding: 8px; border-radius: 7px; border: 1px solid var(--dg);
+  background: var(--ib); color: var(--mg); font-size: 12px; font-weight: 700;
+  font-family: 'Barlow Condensed', sans-serif; letter-spacing: .4px; cursor: pointer;
+}
+.tab-btn.active { background: var(--mb); color: #fff; border-color: var(--lb); }
+
+.meter-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.meter-box { flex: 1; background: var(--ib); border: 1px solid var(--dg); border-radius: 8px; padding: 10px; text-align: center; }
+.meter-label { font-size: 9.5px; color: var(--mg); text-transform: uppercase; letter-spacing: .4px; font-weight: 700; }
+.meter-value { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; margin-top: 2px; }
+.meter-value.conf { color: var(--gf); }
+.meter-value.trap { color: var(--yf); }
+.meter-value.danger { color: var(--rf); }
+
+.suggestion-box {
+  padding: 12px; border-radius: 10px; background: rgba(245,166,35,.08);
+  border: 1.5px solid var(--ac); margin-bottom: 8px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--ac2);
+  text-align: center; line-height: 1.3;
+}
+.secondary-box {
+  padding: 9px 12px; border-radius: 8px; background: var(--ib);
+  border: 1px solid var(--dg); font-size: 12.5px; color: var(--gc); text-align: center;
+}
+
+.lockout {
+  display: flex; align-items: center; gap: 10px; padding: 14px;
+  background: rgba(240,80,106,.08); border: 1.5px dashed var(--rf);
+  border-radius: 10px; color: var(--rf); font-size: 13px; font-weight: 600;
+}
+
+.h2h-row { display: grid; grid-template-columns: 20px 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 6px; }
+.h2h-summary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
+.h2h-stat { background: var(--ib); border-radius: 8px; padding: 8px; text-align: center; border: 1px solid var(--dg); }
+.h2h-stat-label { font-size: 9px; color: var(--mg); text-transform: uppercase; letter-spacing: .3px; }
+.h2h-stat-val { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 800; color: var(--wh); margin-top: 2px; }
+.trend-row { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.trend-pill { padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
+
+.callout { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; margin: 10px 0; font-size: 12px; line-height: 1.45; }
+.callout.amber { background: rgba(255,178,62,.10); border-left: 3px solid var(--yf); color: var(--yc); }
+.callout.blue { background: rgba(124,92,255,.10); border-left: 3px solid var(--pu); color: var(--pc); }
+.callout.red { background: rgba(240,80,106,.08); border-left: 3px solid var(--rf); color: #FFC9D2; }
+.callout.green { background: rgba(47,212,128,.08); border-left: 3px solid var(--gf); color: #BFF4DA; }
+
+/* ── FIXTURE LOG ── */
+.fixture-item { background: var(--ib); border: 1px solid var(--dg); border-radius: 10px; padding: 12px; margin-bottom: 10px; cursor: pointer; }
+.fixture-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.fixture-teams { font-weight: 700; font-size: 14.5px; color: var(--gc); }
+.fixture-date { font-size: 11px; color: var(--mg); margin-top: 1px; }
+.fixture-delete { background: none; border: none; color: var(--rf); font-size: 15px; cursor: pointer; padding: 4px; }
+.fixture-scores { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.fixture-score-chip { font-size: 11px; background: var(--bl); padding: 3px 8px; border-radius: 6px; color: var(--gc); font-weight: 600; }
+.fixture-badge { font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; }
+.fixture-badge.home { background: rgba(245,166,35,.18); color: var(--ac2); }
+.fixture-badge.draw { background: rgba(143,174,156,.18); color: var(--mg); }
+.fixture-badge.away { background: rgba(39,153,102,.2); color: var(--lb); }
+.fixture-tap-hint { font-size: 10.5px; color: var(--mg); margin-top: 6px; text-align: right; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--mg); }
+.empty-state .ico { font-size: 40px; margin-bottom: 10px; opacity: .6; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  z-index: 500; align-items: flex-end; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-sheet {
+  background: var(--nv); width: 100%; max-width: 480px; max-height: 88vh;
+  border-radius: 16px 16px 0 0; overflow-y: auto; padding: 16px;
+  border-top: 2px solid var(--ac);
+}
+.modal-close { float: right; background: var(--ib); border: none; color: var(--mg); width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: calc(80px + var(--safe)); left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--ac); color: var(--dn); padding: 10px 20px; border-radius: 20px;
+  font-weight: 700; font-size: 13px; z-index: 999; opacity: 0; transition: .25s;
+  white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.section-divider { display: flex; align-items: center; gap: 8px; margin: 16px 0 8px; }
+.section-divider span { font-size: 11px; color: var(--mg); text-transform: uppercase; letter-spacing: .6px; font-weight: 700; white-space: nowrap; }
+.section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--dg); }
+
+.guide-block { margin-bottom: 14px; }
+.guide-block h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; color: var(--ac2); margin-bottom: 4px; letter-spacing: .3px; }
+.guide-block p { font-size: 12.5px; color: var(--gc); line-height: 1.55; }
+
+.input-key {
+  background: var(--ib); border: 1.5px solid var(--mb); border-radius: 8px;
+  padding: 9px 10px; color: var(--wh); font-size: 13px; width: 100%; font-family: 'JetBrains Mono', monospace;
+}
+
+.confidence-bar { height: 10px; background: var(--ib); border-radius: 6px; overflow: hidden; margin-top: 4px; }
+.confidence-fill { height: 100%; border-radius: 6px; }
+
+.odds-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--dg); border-radius: 3px; }
+
+.autofill-row { display:flex; gap:8px; margin-bottom:10px; align-items:center; }
+.autofill-row .gg-input { flex:1; margin-bottom:0; }
+.btn-autofill {
+  flex-shrink:0; padding:10px 14px; border:none; border-radius:8px;
+  background:linear-gradient(135deg,#6D28D9,#7C5CFF); color:#fff;
+  font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:800;
+  letter-spacing:.5px; cursor:pointer; white-space:nowrap;
+  transition:opacity .15s; text-transform:uppercase;
+}
+.btn-autofill:active { opacity:.8; }
+.btn-autofill:disabled { opacity:.45; cursor:not-allowed; }
+.autofill-status {
+  font-size:11.5px; font-weight:600; padding:6px 10px; border-radius:6px;
+  margin-bottom:10px; display:none; line-height:1.45;
+}
+.autofill-status.running { display:flex; gap:8px; align-items:center; background:rgba(124,92,255,.12); color:#C4B5FD; }
+.autofill-status.ok { display:flex; gap:8px; align-items:center; background:rgba(47,212,128,.10); color:var(--gf); }
+.autofill-status.err { display:flex; gap:8px; align-items:center; background:rgba(240,80,106,.10); color:var(--rf); }
+.spin { display:inline-block; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.api-key-input {
+  width:100%; padding:10px 12px; background:var(--ib);
+  border:1.5px solid var(--mb); border-radius:8px; color:var(--wh);
+  font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.5px;
+}
+.api-key-input:focus { outline:none; border-color:var(--pu); }
+.api-status-chip {
+  display:inline-flex; align-items:center; gap:5px; padding:5px 12px;
+  border-radius:20px; font-size:12px; font-weight:700;
+  font-family:'Barlow Condensed',sans-serif; margin-top:8px;
+}
+.api-status-chip.none { background:rgba(143,174,156,.12); color:var(--mg); }
+.api-status-chip.ok { background:rgba(47,212,128,.15); color:var(--gf); }
+.api-status-chip.err { background:rgba(240,80,106,.12); color:var(--rf); }
+.api-status-chip.testing { background:rgba(124,92,255,.15); color:#C4B5FD; }
+
+.h2h-row { display:grid; grid-template-columns:20px 1fr 1fr 84px; gap:6px; align-items:center; margin-bottom:6px; }
+.h2h-col-headers { display:grid; grid-template-columns:20px 1fr 1fr 84px; gap:6px; margin-bottom:6px; }
+.h2h-col-headers span { font-size:9px; color:var(--mg); text-align:center; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">⚽ GabGate</div>
+    <div class="topbar-sub">Soccer Matchup Analyzer v1.0</div>
+  </div>
+  <div class="topbar-badge" id="modelBadge">xG ENGINE</div>
+</div>
+
+<!-- ═══════════════ PAGE: ANALYZE ═══════════════ -->
+<div class="page active" id="page-analyze">
+
+  <div class="card">
+    <div class="card-header">
+      <span>🏆</span><span class="card-header-title">Match Setup</span>
+    </div>
+    <div class="card-body">
+      <label class="field-label">Competition / League</label>
+      <div class="select-wrap">
+        <select class="gg-select" id="leagueSelect" onchange="onLeagueChange()"></select>
+        <span class="select-arrow">▾</span>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">🏆 Knockout / Cup Mode</div>
+          <div class="toggle-sub">Finals, two-legged ties, playoffs — tighter, lower-scoring</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="knockoutMode" onchange="onKnockoutModeChange()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">⚪ Neutral Venue</div>
+          <div class="toggle-sub">International tournaments, finals — removes home advantage</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="neutralVenue" onchange="onNeutralVenueChange()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div id="leagueChipWrap" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header amber">
+      <span>📋</span><span class="card-header-title">Team Form — Last 6 Matches</span>
+    </div>
+    <div class="card-body">
+      <div class="autofill-row">
+        <input class="gg-input" id="teamAName" placeholder="Home Team Name" style="font-weight:700" oninput="onInputChange()">
+        <input class="gg-input" id="teamBNameQuick" placeholder="Away Team Name" style="font-weight:700;display:none" oninput="syncTeamBName()">
+      </div>
+      <div class="autofill-row" style="margin-bottom:4px">
+        <input class="gg-input" id="teamBNameTop" placeholder="Away Team Name (for Autofill)" style="font-weight:700;flex:1" oninput="syncTeamBFromTop()">
+        <button class="btn-autofill" id="autofillBtn" onclick="runAutofill()" title="Auto-fill all match data using Gemini AI + web search">⚡ Autofill</button>
+      </div>
+      <div class="autofill-status" id="autofillStatus"></div>
+      <div class="team-header a" style="margin-top:4px">🏠 HOME — Most Recent First</div>
+      <div class="col-headers">
+        <span></span><span>GF</span><span>GA</span><span>Venue</span><span>SoT</span><span>Result</span>
+      </div>
+      <div id="gamesA"></div>
+      <div id="teamADataCheck" class="data-check bad">⛔ Fill all 6 matches (GF + GA required)</div>
+
+      <div class="section-divider"><span>vs</span></div>
+
+      <input class="gg-input" id="teamBName" placeholder="Away Team Name" style="margin-bottom:10px;font-weight:700" oninput="onInputChange()">
+      <div class="team-header b">✈️ AWAY — Most Recent First</div>
+      <div class="col-headers">
+        <span></span><span>GF</span><span>GA</span><span>Venue</span><span>SoT</span><span>Result</span>
+      </div>
+      <div id="gamesB"></div>
+      <div id="teamBDataCheck" class="data-check bad">⛔ Fill all 6 matches (GF + GA required)</div>
+
+      <div class="callout blue" style="margin-top:10px">
+        <span>🔍</span>
+        <div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">Where to find this</strong>
+        FotMob, Sofascore, FBref, or the league's official site. GF/GA = goals for/against in that match. Venue = H (home) or A (away). SoT = shots on target (the most widely available shot quality proxy — always shown on FotMob and Sofascore match pages). Optional but sharpens accuracy significantly.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header purple">
+      <span>📊</span><span class="card-header-title">Context Inputs (Optional, Recommended)</span>
+    </div>
+    <div class="card-body">
+      <div class="rating-grid">
+        <div>
+          <label class="field-label">Home — Days Rest</label>
+          <input class="gg-input" id="restA" type="number" placeholder="e.g. 4" oninput="onInputChange()">
+        </div>
+        <div>
+          <label class="field-label">Away — Days Rest</label>
+          <input class="gg-input" id="restB" type="number" placeholder="e.g. 4" oninput="onInputChange()">
+        </div>
+        <div>
+          <label class="field-label">Home — Key Players Out</label>
+          <input class="gg-input" id="injA" type="number" placeholder="0" oninput="onInputChange()">
+        </div>
+        <div>
+          <label class="field-label">Away — Key Players Out</label>
+          <input class="gg-input" id="injB" type="number" placeholder="0" oninput="onInputChange()">
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <label class="field-label">Match Stakes / Motivation</label>
+        <div class="select-wrap">
+          <select class="gg-select" id="motivation" onchange="onInputChange()">
+            <option value="normal">Normal league fixture</option>
+            <option value="title">Title race / promotion six-pointer</option>
+            <option value="relegation">Relegation six-pointer</option>
+            <option value="dead_rubber_home">Dead rubber — Home side nothing to play for</option>
+            <option value="dead_rubber_away">Dead rubber — Away side nothing to play for</option>
+            <option value="derby">Local derby / rivalry</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="standingCard">
+    <div class="card-header" style="background:linear-gradient(135deg,#1E3A8A,#1D4ED8)">
+      <span>📋</span><span class="card-header-title">Season Record &amp; League Standing</span>
+      <span style="margin-left:auto;font-size:10px;color:#93C5FD;font-weight:600">LEAGUE FIXTURES ONLY</span>
+    </div>
+    <div class="card-body">
+      <div id="standingLeagueToggle" class="callout blue" style="margin-bottom:12px">
+        <span>ℹ️</span>
+        <div>Enter each team's season record (P/W/D/L) and current league position. GabGate uses this to auto-detect six-pointer situations and validate the form window against the full-season picture. Skip for cup/friendly fixtures.</div>
+      </div>
+      <div class="rating-grid">
+        <div>
+          <div class="field-label" id="standLabelA">Home — League Pos</div>
+          <input class="gg-input" id="standPosA" type="number" min="1" placeholder="e.g. 4" oninput="onStandingChange()">
+        </div>
+        <div>
+          <div class="field-label" id="standLabelB">Away — League Pos</div>
+          <input class="gg-input" id="standPosB" type="number" min="1" placeholder="e.g. 8" oninput="onStandingChange()">
+        </div>
+        <div style="grid-column:1/-1">
+          <div class="field-label">Total Teams in Division <span style="color:var(--mg);font-weight:400;text-transform:none">(same for both — e.g. 20 for EPL)</span></div>
+          <input class="gg-input" id="standTotal" type="number" placeholder="e.g. 20 for EPL, 18 for Bundesliga" oninput="onStandingChange()">
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="team-header a" style="font-size:13px;margin-bottom:8px" id="standTeamLabelA">🏠 HOME — Season Record</div>
+        <div class="rating-grid">
+          <div><label class="field-label">Played</label><input class="gg-input" id="standMPA" type="number" min="0" placeholder="MP" oninput="onStandingChange()"></div>
+          <div><label class="field-label">Won</label><input class="gg-input" id="standWA" type="number" min="0" placeholder="W" oninput="onStandingChange()"></div>
+          <div><label class="field-label">Drawn</label><input class="gg-input" id="standDA" type="number" min="0" placeholder="D" oninput="onStandingChange()"></div>
+          <div><label class="field-label">Lost</label><input class="gg-input" id="standLA" type="number" min="0" placeholder="L" oninput="onStandingChange()"></div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="team-header b" style="font-size:13px;margin-bottom:8px" id="standTeamLabelB">✈️ AWAY — Season Record</div>
+        <div class="rating-grid">
+          <div><label class="field-label">Played</label><input class="gg-input" id="standMPB" type="number" min="0" placeholder="MP" oninput="onStandingChange()"></div>
+          <div><label class="field-label">Won</label><input class="gg-input" id="standWB" type="number" min="0" placeholder="W" oninput="onStandingChange()"></div>
+          <div><label class="field-label">Drawn</label><input class="gg-input" id="standDB" type="number" min="0" placeholder="D" oninput="onStandingChange()"></div>
+          <div><label class="field-label">Lost</label><input class="gg-input" id="standLB" type="number" min="0" placeholder="L" oninput="onStandingChange()"></div>
+        </div>
+      </div>
+      <div id="standingSummaryRow" style="display:none;margin-top:12px">
+        <div class="market-grid">
+          <div class="market-cell" id="standChipA"></div>
+          <div class="market-cell best" id="standMatchup"></div>
+          <div class="market-cell" id="standChipB"></div>
+        </div>
+        <div id="standContextAlert" class="callout amber" style="display:none;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header green">
+      <span>⚔️</span><span class="card-header-title">Head-to-Head Scoreboard</span>
+    </div>
+    <div class="card-body">
+      <div class="h2h-col-headers">
+        <span></span>
+        <span id="h2hHomeLabel">Score</span>
+        <span id="h2hAwayLabel">Score</span>
+        <span>Venue</span>
+      </div>
+      <div style="font-size:10.5px;color:var(--mg);margin-bottom:8px;line-height:1.5">
+        <strong style="color:var(--ac2)">H</strong> = <span id="h2hVenueNoteA">Home team</span> played at their home ground &nbsp;·&nbsp;
+        <strong style="color:var(--lb)">A</strong> = <span id="h2hVenueNoteB">Away team</span> played at their home ground &nbsp;·&nbsp;
+        <strong style="color:var(--mg)">N</strong> = Neutral venue
+      </div>
+      <div id="h2hRows"></div>
+      <div id="h2hSummaryBox" class="h2h-summary" style="display:none">
+        <div class="h2h-stat"><div class="h2h-stat-label">W – D – L</div><div class="h2h-stat-val" id="h2hRecord">—</div></div>
+        <div class="h2h-stat"><div class="h2h-stat-label">Avg Total</div><div class="h2h-stat-val" id="h2hAvgTotal">—</div></div>
+        <div class="h2h-stat"><div class="h2h-stat-label">BTTS Rate</div><div class="h2h-stat-val" id="h2hBtts">—</div></div>
+        <div class="h2h-stat"><div class="h2h-stat-label" id="h2hHomeLbl">H-Venue W%</div><div class="h2h-stat-val" id="h2hHomeVenueWin">—</div></div>
+        <div class="h2h-stat"><div class="h2h-stat-label" id="h2hAwayLbl">A-Venue W%</div><div class="h2h-stat-val" id="h2hAwayVenueWin">—</div></div>
+        <div class="h2h-stat"><div class="h2h-stat-label">Venue Split</div><div class="h2h-stat-val" id="h2hVenueSplit">—</div></div>
+      </div>
+      <div id="h2hTrendRow" class="trend-row" style="display:none">
+        <span class="trend-pill" id="h2hTrendPill">—</span>
+        <span id="h2hDominance" style="font-size:12px;color:var(--mg)">—</span>
+      </div>
+      <div id="h2hBonus" style="text-align:center;margin-top:8px;font-size:11.5px;color:var(--mg);font-weight:600">H2H Bonus: +0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#1B5C3F,#279966)">
+      <span>💰</span><span class="card-header-title">Bookmaker Lines (Optional — Value Detection)</span>
+    </div>
+    <div class="card-body">
+      <div class="odds-row">
+        <div>
+          <label class="field-label">Home Odds (decimal)</label>
+          <input class="gg-input" id="oddsHome" type="number" step="0.01" placeholder="e.g. 1.85" oninput="onInputChange()">
+        </div>
+        <div>
+          <label class="field-label">Draw Odds</label>
+          <input class="gg-input" id="oddsDraw" type="number" step="0.01" placeholder="e.g. 3.60" oninput="onInputChange()">
+        </div>
+      </div>
+      <div class="odds-row">
+        <div>
+          <label class="field-label">Away Odds</label>
+          <input class="gg-input" id="oddsAway" type="number" step="0.01" placeholder="e.g. 4.20" oninput="onInputChange()">
+        </div>
+        <div>
+          <label class="field-label">O/U 2.5 Line Odds (Over)</label>
+          <input class="gg-input" id="oddsOver25" type="number" step="0.01" placeholder="e.g. 1.90" oninput="onInputChange()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="runAnalysis()" style="margin-bottom:8px">⚡ Analyze Fixture</button>
+
+  <div id="dataLockout" class="lockout" style="display:none">
+    <span style="font-size:20px">⛔</span>
+    <span>Complete all 6 matches for both teams (GF + GA required) before running analysis.</span>
+  </div>
+
+  <div id="resultsWrap" style="display:none">
+
+    <div class="card">
+      <div class="card-header gold">
+        <span>🎯</span><span class="card-header-title">Match Outcome — 1X2</span>
+      </div>
+      <div class="card-body">
+        <div class="score-display" id="scoreDisplay"></div>
+        <div class="classification" id="classificationBadge"></div>
+        <div id="standingContextRow" style="display:none;margin-bottom:10px"></div>
+        <div class="suggestion-box" id="mainSuggestion"></div>
+        <div class="secondary-box" id="secondarySuggestion"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span>📐</span><span class="card-header-title">Expected Goals (xG) Breakdown</span>
+      </div>
+      <div class="card-body">
+        <div class="market-grid" style="margin-bottom:10px">
+          <div class="market-cell"><div class="market-cell-label" id="xgHomeLabel">Home xG</div><div class="market-cell-val" id="xgHome">—</div></div>
+          <div class="market-cell"><div class="market-cell-label">Total xG</div><div class="market-cell-val" id="xgTotal">—</div></div>
+          <div class="market-cell"><div class="market-cell-label" id="xgAwayLabel">Away xG</div><div class="market-cell-val" id="xgAway">—</div></div>
+        </div>
+        <div class="tab-row">
+          <button class="tab-btn active" id="ratingTabA" onclick="showRatingTab('a')">Home Form</button>
+          <button class="tab-btn" id="ratingTabB" onclick="showRatingTab('b')">Away Form</button>
+        </div>
+        <div class="rating-grid" id="ratingGridA"></div>
+        <div class="rating-grid" id="ratingGridB" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:linear-gradient(135deg,#1E3A8A,#2563EB)">
+        <span>📈</span><span class="card-header-title">Over / Under Goals</span>
+      </div>
+      <div class="card-body" id="ouMarketBody"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:linear-gradient(135deg,#9D174D,#DB2777)">
+        <span>🥅</span><span class="card-header-title">Both Teams To Score (BTTS)</span>
+      </div>
+      <div class="card-body" id="bttsMarketBody"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header purple">
+        <span>🛡️</span><span class="card-header-title">Double Chance &amp; Draw No Bet</span>
+      </div>
+      <div class="card-body" id="dcMarketBody"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header amber">
+        <span>⚖️</span><span class="card-header-title">Asian Handicap Lean</span>
+      </div>
+      <div class="card-body" id="ahMarketBody"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:linear-gradient(135deg,#0E7490,#06B6D4)">
+        <span>🔢</span><span class="card-header-title">Most Likely Scorelines</span>
+      </div>
+      <div class="card-body">
+        <div class="scoreline-grid" id="scorelineGrid"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:linear-gradient(135deg,#166534,#16A34A)">
+        <span>🧤</span><span class="card-header-title">Clean Sheet &amp; Team Goals</span>
+      </div>
+      <div class="card-body" id="cleanSheetBody"></div>
+    </div>
+
+    <div class="card" id="valueBetCard" style="display:none">
+      <div class="card-header gold">
+        <span>💎</span><span class="card-header-title">Value Bet Detector</span>
+      </div>
+      <div class="card-body" id="valueBetBody"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:linear-gradient(135deg,#1F2937,#374151)">
+        <span>📡</span><span class="card-header-title">Signal Strength</span>
+      </div>
+      <div class="card-body">
+        <div class="meter-row">
+          <div class="meter-box"><div class="meter-label">Trap Risk</div><div class="meter-value" id="trapPct">—</div></div>
+          <div class="meter-box"><div class="meter-label">Confidence</div><div class="meter-value" id="confPct">—</div></div>
+          <div class="meter-box"><div class="meter-label">Form Gap</div><div class="meter-value" id="formGap">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header red">
+        <span>🚨</span><span class="card-header-title">Trap &amp; Anomaly Alerts</span>
+      </div>
+      <div class="card-body" id="alertsContainer"></div>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:8px">
+      <button class="btn btn-secondary" onclick="saveToLog()">💾 Save Pick</button>
+      <button class="btn btn-ghost" onclick="confirmReset()">🔄 Reset</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ PAGE: LIVE ═══════════════ -->
+<div class="page" id="page-live">
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#7A1F2B,#C0203A)">
+      <span>⚡</span><span class="card-header-title">Live HT Tracker</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12.5px;color:var(--gc);line-height:1.5;margin-bottom:12px">
+        Enter half-time score and shot/xG data the moment HT whistle blows. This overrides the pre-game model with real in-match evidence — the single most reliable live signal in GabGate.
+      </p>
+      <div class="rating-grid" style="margin-bottom:10px">
+        <div>
+          <label class="field-label">HT Score — Home</label>
+          <input class="gg-input" id="liveHTHome" type="number" placeholder="0" oninput="calcLive()">
+        </div>
+        <div>
+          <label class="field-label">HT Score — Away</label>
+          <input class="gg-input" id="liveHTAway" type="number" placeholder="0" oninput="calcLive()">
+        </div>
+        <div>
+          <label class="field-label">HT Shots on Target (Home)</label>
+          <input class="gg-input" id="liveSOTHome" type="number" placeholder="0" oninput="calcLive()">
+        </div>
+        <div>
+          <label class="field-label">HT Shots on Target (Away)</label>
+          <input class="gg-input" id="liveSOTAway" type="number" placeholder="0" oninput="calcLive()">
+        </div>
+        <div>
+          <label class="field-label">Red Cards — Home</label>
+          <input class="gg-input" id="liveRedHome" type="number" placeholder="0" oninput="calcLive()">
+        </div>
+        <div>
+          <label class="field-label">Red Cards — Away</label>
+          <input class="gg-input" id="liveRedAway" type="number" placeholder="0" oninput="calcLive()">
+        </div>
+      </div>
+      <button class="btn btn-purple" onclick="calcLive()">⚡ Calculate Live Lean</button>
+      <div id="liveResultWrap" style="margin-top:14px;display:none">
+        <div class="suggestion-box" id="liveSuggestion"></div>
+        <div class="secondary-box" id="liveSecondary" style="margin-top:8px"></div>
+        <div class="market-grid" style="margin-top:12px">
+          <div class="market-cell"><div class="market-cell-label">Proj. Full-Time Total</div><div class="market-cell-val" id="liveProjTotal">—</div></div>
+          <div class="market-cell"><div class="market-cell-label">2H Goal Pace</div><div class="market-cell-val" id="livePace">—</div></div>
+          <div class="market-cell"><div class="market-cell-label">BTTS 2nd Half</div><div class="market-cell-val" id="liveBtts">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="callout amber">
+    <span>📏</span>
+    <div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">The HT Rule</strong>
+    A goalless HT with low combined shots on target (≤4) is the strongest live Under signal in soccer. A red card before HT should always override a pre-game pace read — 10 vs 11 changes the entire game state.</div>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE: PICKS ═══════════════ -->
+<div class="page" id="page-picks">
+  <div class="card">
+    <div class="card-header">
+      <span>📅</span><span class="card-header-title" id="picksHeader">Today's Picks</span>
+    </div>
+    <div class="card-body">
+      <div id="picksStaleWarning" class="callout amber" style="display:none">
+        <span>⚠️</span><div>No fixtures saved today — showing most recent picks for reference. These are not today's predictions.</div>
+      </div>
+      <div class="rating-grid" style="margin-bottom:10px">
+        <div class="select-wrap">
+          <select class="gg-select" id="filterLeague" onchange="renderFixtureLog()">
+            <option value="">All Leagues</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+        <div class="select-wrap">
+          <select class="gg-select" id="filterConf" onchange="renderFixtureLog()">
+            <option value="0">Any Confidence</option>
+            <option value="50">Conf ≥ 50%</option>
+            <option value="65">Conf ≥ 65%</option>
+            <option value="80">Conf ≥ 80%</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+      <div id="fixtureStats" style="display:none;margin-bottom:10px"><div id="fixtureStatsBody"></div></div>
+      <div id="fixtureList"></div>
+      <div id="fixtureEmpty" class="empty-state" style="display:none">
+        <div class="ico">📭</div>
+        <div>No saved picks yet. Run an analysis and tap Save Pick.</div>
+      </div>
+      <button class="btn btn-ghost" onclick="clearAllFixtures()" style="margin-top:10px">🗑 Clear All Fixtures</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PAGE: SETTINGS / GUIDE ═══════════════ -->
+<div class="page" id="page-settings">
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#4C1D95,#6D28D9)">
+      <span>🤖</span><span class="card-header-title">Gemini AI Autofill — API Key</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12.5px;color:var(--gc);margin-bottom:12px;line-height:1.6">
+        GabGate uses <strong style="color:var(--ac2)">Google Gemini 2.5 Flash</strong> with built-in web search to automatically fetch team form, SoT, season records and H2H data from ESPN, FotMob, Sofascore, FBref and more — and pre-fill every input field for you.<br><br>
+        Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#C4B5FD;text-decoration:underline">aistudio.google.com/apikey</a> (Google AI Studio — free tier, no card required).
+      </p>
+      <label class="field-label">Gemini API Key</label>
+      <div style="position:relative;margin-bottom:8px">
+        <input class="api-key-input" id="geminiApiKey" type="password" placeholder="AIza..." oninput="onApiKeyInput()">
+        <button onclick="toggleKeyVisibility()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mg);cursor:pointer;font-size:16px" id="keyVisBtn">👁</button>
+      </div>
+      <div id="apiStatusChip" class="api-status-chip none">⬤ &nbsp;No key saved</div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-secondary" onclick="saveApiKey()">💾 Save Key</button>
+        <button class="btn btn-purple" onclick="testApiConnection()">🔗 Test Connection</button>
+      </div>
+      <div id="apiTestResult" style="margin-top:10px;font-size:12px;color:var(--mg);display:none"></div>
+      <div class="callout blue" style="margin-top:14px">
+        <span>🔒</span>
+        <div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">Privacy</strong>
+        Your API key is stored only in your browser's localStorage. It is sent directly to Google's servers for each Autofill request — GabGate itself never sees or stores it on any server.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header purple">
+      <span>📖</span><span class="card-header-title">In-App SOP &amp; Guide</span>
+    </div>
+    <div class="card-body" id="guideContent"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#374151,#1F2937)">
+      <span>⚙️</span><span class="card-header-title">App Data</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12px;color:var(--mg);margin-bottom:10px">All data is stored locally on this device (localStorage). Nothing is sent to any server except Google (for Autofill API calls).</p>
+      <button class="btn btn-ghost" onclick="clearAllFixtures()">🗑 Clear Fixture Log</button>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-analyze" onclick="navigateTo('analyze')">
+    <span class="nav-icon">📊</span><span class="nav-label">Analyze</span>
+  </button>
+  <button class="nav-btn" id="nav-live" onclick="navigateTo('live')">
+    <span class="nav-icon">⚡</span><span class="nav-label">Live HT</span>
+  </button>
+  <button class="nav-btn" id="nav-picks" onclick="navigateTo('picks')">
+    <span class="nav-icon">📅</span><span class="nav-label">Picks</span>
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="navigateTo('settings')">
+    <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+  </button>
+</div>
+
+<div class="modal-overlay" id="fxModalOverlay" onclick="if(event.target===this) closeFxModal()">
+  <div class="modal-sheet" id="fxModalSheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+
+
+
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// GABGATE v1.0 — SOCCER MATCHUP ANALYZER
+// Engine: Dixon-Coles Bivariate Poisson xG Model
+// ═══════════════════════════════════════════════════════════════════════
+
+// LEAGUE DATABASE
+// avgHomeGF/avgHomeGA/avgAwayGF/avgAwayGA = league-average goals scored/conceded
+// by home & away sides per match (calibrated to recent real-season data where known).
+// rho = Dixon-Coles low-score correlation parameter (typically -0.03 to -0.13)
+// homeAdv = additive xG home advantage (goals), tier = competitive level for trap calibration
+const LEAGUES = {
+  // ── TOP 5 EUROPEAN LEAGUES ──
+  "Premier League (England)":      {avgHomeGF:1.58,avgHomeGA:1.17,avgAwayGF:1.17,avgAwayGA:1.58,rho:-0.08,homeAdv:0.33,tier:1,region:"England"},
+  "La Liga (Spain)":                {avgHomeGF:1.52,avgHomeGA:1.17,avgAwayGF:1.17,avgAwayGA:1.52,rho:-0.09,homeAdv:0.32,tier:1,region:"Spain"},
+  "Serie A (Italy)":                 {avgHomeGF:1.48,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.48,rho:-0.10,homeAdv:0.30,tier:1,region:"Italy"},
+  "Bundesliga (Germany)":           {avgHomeGF:1.68,avgHomeGA:1.30,avgAwayGF:1.30,avgAwayGA:1.68,rho:-0.07,homeAdv:0.34,tier:1,region:"Germany"},
+  "Ligue 1 (France)":                {avgHomeGF:1.58,avgHomeGA:1.24,avgAwayGF:1.24,avgAwayGA:1.58,rho:-0.08,homeAdv:0.31,tier:1,region:"France"},
+
+  // ── ENGLAND LOWER DIVISIONS ──
+  "EFL Championship (England)":     {avgHomeGF:1.40,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.40,rho:-0.09,homeAdv:0.28,tier:2,region:"England"},
+  "EFL League One (England)":       {avgHomeGF:1.38,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.38,rho:-0.09,homeAdv:0.27,tier:3,region:"England"},
+  "EFL League Two (England)":       {avgHomeGF:1.34,avgHomeGA:1.16,avgAwayGF:1.16,avgAwayGA:1.34,rho:-0.10,homeAdv:0.26,tier:4,region:"England"},
+  "National League (England)":      {avgHomeGF:1.36,avgHomeGA:1.22,avgAwayGF:1.22,avgAwayGA:1.36,rho:-0.10,homeAdv:0.25,tier:5,region:"England"},
+  "FA Cup":                          {avgHomeGF:1.45,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.45,rho:-0.09,homeAdv:0.27,tier:2,region:"England",isCup:true},
+  "EFL Cup":                         {avgHomeGF:1.48,avgHomeGA:1.25,avgAwayGF:1.25,avgAwayGA:1.48,rho:-0.08,homeAdv:0.26,tier:2,region:"England",isCup:true},
+
+  // ── SPAIN LOWER ──
+  "La Liga 2 / Segunda (Spain)":    {avgHomeGF:1.22,avgHomeGA:1.02,avgAwayGF:1.02,avgAwayGA:1.22,rho:-0.11,homeAdv:0.26,tier:2,region:"Spain"},
+  "Copa del Rey":                   {avgHomeGF:1.50,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.50,rho:-0.09,homeAdv:0.27,tier:2,region:"Spain",isCup:true},
+
+  // ── ITALY LOWER ──
+  "Serie B (Italy)":                {avgHomeGF:1.20,avgHomeGA:1.00,avgAwayGF:1.00,avgAwayGA:1.20,rho:-0.11,homeAdv:0.27,tier:2,region:"Italy"},
+  "Coppa Italia":                   {avgHomeGF:1.42,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.42,rho:-0.10,homeAdv:0.26,tier:2,region:"Italy",isCup:true},
+
+  // ── GERMANY LOWER ──
+  "2. Bundesliga (Germany)":        {avgHomeGF:1.48,avgHomeGA:1.22,avgAwayGF:1.22,avgAwayGA:1.48,rho:-0.08,homeAdv:0.29,tier:2,region:"Germany"},
+  "3. Liga (Germany)":               {avgHomeGF:1.40,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.40,rho:-0.09,homeAdv:0.27,tier:3,region:"Germany"},
+  "DFB-Pokal":                       {avgHomeGF:1.55,avgHomeGA:1.28,avgAwayGF:1.28,avgAwayGA:1.55,rho:-0.07,homeAdv:0.28,tier:2,region:"Germany",isCup:true},
+
+  // ── FRANCE LOWER ──
+  "Ligue 2 (France)":                {avgHomeGF:1.28,avgHomeGA:1.08,avgAwayGF:1.08,avgAwayGA:1.28,rho:-0.10,homeAdv:0.26,tier:2,region:"France"},
+  "Coupe de France":                 {avgHomeGF:1.40,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.40,rho:-0.09,homeAdv:0.25,tier:2,region:"France",isCup:true},
+
+  // ── OTHER MAJOR EUROPE ──
+  "Eredivisie (Netherlands)":        {avgHomeGF:1.78,avgHomeGA:1.38,avgAwayGF:1.38,avgAwayGA:1.78,rho:-0.06,homeAdv:0.32,tier:1,region:"Netherlands"},
+  "Primeira Liga (Portugal)":        {avgHomeGF:1.48,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.48,rho:-0.09,homeAdv:0.30,tier:1,region:"Portugal"},
+  "Belgian Pro League":              {avgHomeGF:1.55,avgHomeGA:1.28,avgAwayGF:1.28,avgAwayGA:1.55,rho:-0.08,homeAdv:0.30,tier:1,region:"Belgium"},
+  "Scottish Premiership":            {avgHomeGF:1.50,avgHomeGA:1.22,avgAwayGF:1.22,avgAwayGA:1.50,rho:-0.08,homeAdv:0.31,tier:1,region:"Scotland"},
+  "Super Lig (Turkey)":              {avgHomeGF:1.55,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.55,rho:-0.08,homeAdv:0.35,tier:1,region:"Turkey"},
+  "Super League Greece":             {avgHomeGF:1.40,avgHomeGA:1.10,avgAwayGF:1.10,avgAwayGA:1.40,rho:-0.10,homeAdv:0.33,tier:1,region:"Greece"},
+  "Austrian Bundesliga":             {avgHomeGF:1.60,avgHomeGA:1.30,avgAwayGF:1.30,avgAwayGA:1.60,rho:-0.07,homeAdv:0.30,tier:1,region:"Austria"},
+  "Swiss Super League":              {avgHomeGF:1.62,avgHomeGA:1.32,avgAwayGF:1.32,avgAwayGA:1.62,rho:-0.07,homeAdv:0.29,tier:1,region:"Switzerland"},
+  "Danish Superliga":                {avgHomeGF:1.48,avgHomeGA:1.22,avgAwayGF:1.22,avgAwayGA:1.48,rho:-0.08,homeAdv:0.28,tier:1,region:"Denmark"},
+  "Eliteserien (Norway)":            {avgHomeGF:1.50,avgHomeGA:1.25,avgAwayGF:1.25,avgAwayGA:1.50,rho:-0.08,homeAdv:0.27,tier:1,region:"Norway"},
+  "Allsvenskan (Sweden)":            {avgHomeGF:1.42,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.42,rho:-0.09,homeAdv:0.27,tier:1,region:"Sweden"},
+  "Veikkausliiga (Finland)":         {avgHomeGF:1.40,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.40,rho:-0.09,homeAdv:0.26,tier:1,region:"Finland"},
+  "Ekstraklasa (Poland)":            {avgHomeGF:1.35,avgHomeGA:1.10,avgAwayGF:1.10,avgAwayGA:1.35,rho:-0.10,homeAdv:0.28,tier:1,region:"Poland"},
+  "Czech First League":              {avgHomeGF:1.50,avgHomeGA:1.25,avgAwayGF:1.25,avgAwayGA:1.50,rho:-0.08,homeAdv:0.28,tier:1,region:"Czechia"},
+  "Croatian HNL":                    {avgHomeGF:1.50,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.50,rho:-0.08,homeAdv:0.31,tier:1,region:"Croatia"},
+  "Serbian SuperLiga":               {avgHomeGF:1.45,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.45,rho:-0.09,homeAdv:0.32,tier:1,region:"Serbia"},
+  "Ukrainian Premier League":        {avgHomeGF:1.42,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.42,rho:-0.09,homeAdv:0.30,tier:1,region:"Ukraine"},
+  "Russian Premier League":          {avgHomeGF:1.45,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.45,rho:-0.09,homeAdv:0.30,tier:1,region:"Russia"},
+  "Romanian Liga I":                 {avgHomeGF:1.35,avgHomeGA:1.12,avgAwayGF:1.12,avgAwayGA:1.35,rho:-0.10,homeAdv:0.29,tier:1,region:"Romania"},
+  "Hungarian NB I":                  {avgHomeGF:1.45,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.45,rho:-0.09,homeAdv:0.29,tier:1,region:"Hungary"},
+
+  // ── ELITE CLUB COMPETITIONS ──
+  "UEFA Champions League":           {avgHomeGF:1.62,avgHomeGA:1.22,avgAwayGF:1.22,avgAwayGA:1.62,rho:-0.07,homeAdv:0.28,tier:1,region:"Europe",isCup:true},
+  "UEFA Europa League":              {avgHomeGF:1.55,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.55,rho:-0.08,homeAdv:0.28,tier:1,region:"Europe",isCup:true},
+  "UEFA Europa Conference League":   {avgHomeGF:1.52,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.52,rho:-0.08,homeAdv:0.27,tier:1,region:"Europe",isCup:true},
+
+  // ── AMERICAS ──
+  "MLS (USA/Canada)":                {avgHomeGF:1.58,avgHomeGA:1.30,avgAwayGF:1.30,avgAwayGA:1.58,rho:-0.08,homeAdv:0.30,tier:1,region:"USA"},
+  "Liga MX (Mexico)":                {avgHomeGF:1.55,avgHomeGA:1.25,avgAwayGF:1.25,avgAwayGA:1.55,rho:-0.08,homeAdv:0.30,tier:1,region:"Mexico"},
+  "Brasileirão Série A (Brazil)":   {avgHomeGF:1.42,avgHomeGA:1.05,avgAwayGF:1.05,avgAwayGA:1.42,rho:-0.10,homeAdv:0.35,tier:1,region:"Brazil"},
+  "Brasileirão Série B (Brazil)":   {avgHomeGF:1.32,avgHomeGA:1.00,avgAwayGF:1.00,avgAwayGA:1.32,rho:-0.11,homeAdv:0.33,tier:2,region:"Brazil"},
+  "Primera División (Argentina)":   {avgHomeGF:1.30,avgHomeGA:0.98,avgAwayGF:0.98,avgAwayGA:1.30,rho:-0.11,homeAdv:0.34,tier:1,region:"Argentina"},
+  "Copa Libertadores":               {avgHomeGF:1.45,avgHomeGA:1.05,avgAwayGF:1.05,avgAwayGA:1.45,rho:-0.10,homeAdv:0.36,tier:1,region:"South America",isCup:true},
+  "Copa Sudamericana":               {avgHomeGF:1.40,avgHomeGA:1.05,avgAwayGF:1.05,avgAwayGA:1.40,rho:-0.10,homeAdv:0.34,tier:1,region:"South America",isCup:true},
+  "Primera División (Chile)":        {avgHomeGF:1.35,avgHomeGA:1.10,avgAwayGF:1.10,avgAwayGA:1.35,rho:-0.10,homeAdv:0.30,tier:1,region:"Chile"},
+  "Categoría Primera A (Colombia)": {avgHomeGF:1.25,avgHomeGA:1.00,avgAwayGF:1.00,avgAwayGA:1.25,rho:-0.11,homeAdv:0.30,tier:1,region:"Colombia"},
+
+  // ── ASIA ──
+  "J1 League (Japan)":               {avgHomeGF:1.48,avgHomeGA:1.22,avgAwayGF:1.22,avgAwayGA:1.48,rho:-0.08,homeAdv:0.26,tier:1,region:"Japan"},
+  "K League 1 (South Korea)":        {avgHomeGF:1.42,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.42,rho:-0.09,homeAdv:0.25,tier:1,region:"South Korea"},
+  "Chinese Super League":            {avgHomeGF:1.40,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.40,rho:-0.09,homeAdv:0.29,tier:1,region:"China"},
+  "Saudi Pro League":                {avgHomeGF:1.55,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.55,rho:-0.08,homeAdv:0.31,tier:1,region:"Saudi Arabia"},
+  "Indian Super League":             {avgHomeGF:1.38,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.38,rho:-0.09,homeAdv:0.28,tier:1,region:"India"},
+  "A-League (Australia)":            {avgHomeGF:1.50,avgHomeGA:1.28,avgAwayGF:1.28,avgAwayGA:1.50,rho:-0.08,homeAdv:0.26,tier:1,region:"Australia"},
+  "AFC Champions League Elite":      {avgHomeGF:1.50,avgHomeGA:1.18,avgAwayGF:1.18,avgAwayGA:1.50,rho:-0.08,homeAdv:0.28,tier:1,region:"Asia",isCup:true},
+
+  // ── AFRICA ──
+  "Egyptian Premier League":         {avgHomeGF:1.30,avgHomeGA:0.95,avgAwayGF:0.95,avgAwayGA:1.30,rho:-0.11,homeAdv:0.33,tier:1,region:"Egypt"},
+  "South African Premiership":       {avgHomeGF:1.20,avgHomeGA:1.00,avgAwayGF:1.00,avgAwayGA:1.20,rho:-0.12,homeAdv:0.27,tier:1,region:"South Africa"},
+  "Moroccan Botola":                 {avgHomeGF:1.22,avgHomeGA:0.95,avgAwayGF:0.95,avgAwayGA:1.22,rho:-0.12,homeAdv:0.30,tier:1,region:"Morocco"},
+  "CAF Champions League":            {avgHomeGF:1.30,avgHomeGA:0.95,avgAwayGF:0.95,avgAwayGA:1.30,rho:-0.11,homeAdv:0.34,tier:1,region:"Africa",isCup:true},
+  "Nigerian Professional League":    {avgHomeGF:1.15,avgHomeGA:0.90,avgAwayGF:0.90,avgAwayGA:1.15,rho:-0.13,homeAdv:0.30,tier:1,region:"Nigeria"},
+
+  // ── INTERNATIONAL ──
+  "FIFA World Cup":                  {avgHomeGF:1.40,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.40,rho:-0.09,homeAdv:0.15,tier:1,region:"International",neutralDefault:true,isCup:true},
+  "World Cup Qualifiers":            {avgHomeGF:1.50,avgHomeGA:1.10,avgAwayGF:1.10,avgAwayGA:1.50,rho:-0.09,homeAdv:0.30,tier:1,region:"International",isCup:true},
+  "UEFA European Championship":      {avgHomeGF:1.35,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.35,rho:-0.10,homeAdv:0.15,tier:1,region:"International",neutralDefault:true,isCup:true},
+  "UEFA Nations League":             {avgHomeGF:1.45,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.45,rho:-0.09,homeAdv:0.28,tier:1,region:"International",isCup:true},
+  "Copa América":                    {avgHomeGF:1.30,avgHomeGA:1.10,avgAwayGF:1.10,avgAwayGA:1.30,rho:-0.10,homeAdv:0.15,tier:1,region:"International",neutralDefault:true,isCup:true},
+  "AFCON (Africa Cup of Nations)":   {avgHomeGF:1.25,avgHomeGA:1.10,avgAwayGF:1.10,avgAwayGA:1.25,rho:-0.11,homeAdv:0.15,tier:1,region:"International",neutralDefault:true,isCup:true},
+  "International Friendly":          {avgHomeGF:1.40,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.40,rho:-0.10,homeAdv:0.20,tier:2,region:"International",isCup:true},
+  "Olympic Football":                {avgHomeGF:1.35,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.35,rho:-0.10,homeAdv:0.15,tier:1,region:"International",neutralDefault:true,isCup:true},
+
+  // ── WOMEN'S FOOTBALL ──
+  "WSL (England Women)":             {avgHomeGF:1.60,avgHomeGA:1.30,avgAwayGF:1.30,avgAwayGA:1.60,rho:-0.07,homeAdv:0.28,tier:1,region:"England Women"},
+  "NWSL (USA Women)":                {avgHomeGF:1.45,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.45,rho:-0.08,homeAdv:0.26,tier:1,region:"USA Women"},
+  "FIFA Women's World Cup":          {avgHomeGF:1.40,avgHomeGA:1.15,avgAwayGF:1.15,avgAwayGA:1.40,rho:-0.09,homeAdv:0.15,tier:1,region:"International Women",neutralDefault:true,isCup:true},
+  "UEFA Women's Champions League":   {avgHomeGF:1.65,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.65,rho:-0.07,homeAdv:0.30,tier:1,region:"Europe Women",isCup:true},
+
+  // ── LOWER-TIER / UNKNOWN FALLBACK ──
+  "Lower Division / Semi-Pro (Generic)": {avgHomeGF:1.30,avgHomeGA:1.10,avgAwayGF:1.10,avgAwayGA:1.30,rho:-0.11,homeAdv:0.26,tier:5,region:"Generic"},
+  "Unknown / Other League":          {avgHomeGF:1.40,avgHomeGA:1.20,avgAwayGF:1.20,avgAwayGA:1.40,rho:-0.09,homeAdv:0.28,tier:3,region:"Generic"},
+};
+
+const LEAGUE_NAMES = Object.keys(LEAGUES);
+
+// ═══════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════
+const NUM_GAMES = 6; // last 6 matches per team (recency-weighted)
+const RECENCY_W = [1.40, 1.25, 1.10, 0.95, 0.80, 0.70]; // most recent first
+
+let state = {
+  league: LEAGUE_NAMES[0],
+  knockoutMode: false,
+  neutralVenue: false,
+  teamAName: '',
+  teamBName: '',
+  gamesA: Array.from({length: NUM_GAMES}, () => ({gf: null, ga: null, venue: 'H', sot: null, result: ''})),
+  gamesB: Array.from({length: NUM_GAMES}, () => ({gf: null, ga: null, venue: 'A', sot: null, result: ''})),
+  h2hGames: Array.from({length: 4}, () => ({a: null, b: null, venue: 'H'})),
+  restA: null, restB: null, injA: null, injB: null,
+  motivation: 'normal',
+  standA: {pos:null,total:null,mp:null,w:null,d:null,l:null},
+  standB: {pos:null,total:null,mp:null,w:null,d:null,l:null},
+  oddsHome: null, oddsDraw: null, oddsAway: null, oddsOver25: null,
+  analysis: null,
+};
+
+function saveState() {
+  try { localStorage.setItem('gabgate_v1_state', JSON.stringify(state)); } catch(e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem('gabgate_v1_state');
+    if (raw) {
+      const loaded = JSON.parse(raw);
+      state = Object.assign(state, loaded);
+      // defensive: ensure array lengths are correct after any version migration
+      if (!state.gamesA || state.gamesA.length !== NUM_GAMES) state.gamesA = Array.from({length: NUM_GAMES}, () => ({gf:null,ga:null,venue:'H',sot:null,result:''}));
+      // migrate old xgd field to sot
+      state.gamesA.forEach(g => { if (g.xgd !== undefined && g.sot === undefined) { g.sot = null; delete g.xgd; } });
+      if (!state.gamesB || state.gamesB.length !== NUM_GAMES) state.gamesB = Array.from({length: NUM_GAMES}, () => ({gf:null,ga:null,venue:'A',sot:null,result:''}));
+      state.gamesB.forEach(g => { if (g.xgd !== undefined && g.sot === undefined) { g.sot = null; delete g.xgd; } });
+      if (!state.h2hGames || state.h2hGames.length !== 4) state.h2hGames = Array.from({length: 4}, () => ({a:null,b:null,venue:'H'}));
+      state.h2hGames.forEach(g => { if (g.venue === undefined) g.venue = 'H'; });
+      if (!state.standA) state.standA = {pos:null,total:null,mp:null,w:null,d:null,l:null};
+      if (!state.standB) state.standB = {pos:null,total:null,mp:null,w:null,d:null,l:null};
+    }
+  } catch(e) {}
+}
+function getFixtures() {
+  try { return JSON.parse(localStorage.getItem('gabgate_v1_fixtures') || '[]'); } catch(e) { return []; }
+}
+function saveFixtures(arr) {
+  try { localStorage.setItem('gabgate_v1_fixtures', JSON.stringify(arr)); } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════
+function navigateTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  document.getElementById(`nav-${page}`).classList.add('active');
+  if (page === 'picks') renderFixtureLog();
+  if (page === 'settings') renderGuide();
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// BUILD INPUT UI
+// ═══════════════════════════════════════════════════════════════════════
+function buildInputUI() {
+  const sel = document.getElementById('leagueSelect');
+  sel.innerHTML = LEAGUE_NAMES.map(l => `<option value="${l}" ${l===state.league?'selected':''}>${l}</option>`).join('');
+
+  buildGameInputs('A');
+  buildGameInputs('B');
+  buildH2HUI();
+
+  document.getElementById('teamAName').value = state.teamAName;
+  document.getElementById('teamBName').value = state.teamBName;
+  document.getElementById('knockoutMode').checked = state.knockoutMode;
+  document.getElementById('neutralVenue').checked = state.neutralVenue;
+  document.getElementById('restA').value = state.restA ?? '';
+  document.getElementById('restB').value = state.restB ?? '';
+  document.getElementById('injA').value = state.injA ?? '';
+  document.getElementById('injB').value = state.injB ?? '';
+  document.getElementById('motivation').value = state.motivation;
+  document.getElementById('oddsHome').value = state.oddsHome ?? '';
+  document.getElementById('oddsDraw').value = state.oddsDraw ?? '';
+  document.getElementById('oddsAway').value = state.oddsAway ?? '';
+  document.getElementById('oddsOver25').value = state.oddsOver25 ?? '';
+
+  // standing fields
+  const sA = state.standA, sB = state.standB;
+  document.getElementById('standPosA').value = sA.pos ?? '';
+  document.getElementById('standPosB').value = sB.pos ?? '';
+  document.getElementById('standTotal').value = sA.total ?? '';
+  document.getElementById('standMPA').value = sA.mp ?? '';
+  document.getElementById('standWA').value = sA.w ?? '';
+  document.getElementById('standDA').value = sA.d ?? '';
+  document.getElementById('standLA').value = sA.l ?? '';
+  document.getElementById('standMPB').value = sB.mp ?? '';
+  document.getElementById('standWB').value = sB.w ?? '';
+  document.getElementById('standDB').value = sB.d ?? '';
+  document.getElementById('standLB').value = sB.l ?? '';
+  updateStandingTeamLabels();
+  renderStandingSummary();
+
+  // sync teamBNameTop with teamBName state
+  const topField = document.getElementById('teamBNameTop');
+  if (topField) topField.value = state.teamBName && state.teamBName !== 'AWAY TEAM' ? state.teamBName : '';
+
+  updateLeagueChip();
+  checkDataCompleteness();
+  updateH2HSummary();
+}
+
+function buildGameInputs(team) {
+  const arr = team === 'A' ? state.gamesA : state.gamesB;
+  const container = document.getElementById(`games${team}`);
+  container.innerHTML = arr.map((g, i) => `
+    <div class="game-row">
+      <span class="game-row-label">${i+1}</span>
+      <input class="gg-input" type="number" min="0" placeholder="GF" value="${g.gf ?? ''}" oninput="updateGame('${team}',${i},'gf',this.value)">
+      <input class="gg-input" type="number" min="0" placeholder="GA" value="${g.ga ?? ''}" oninput="updateGame('${team}',${i},'ga',this.value)">
+      <select class="gg-input" onchange="updateGame('${team}',${i},'venue',this.value)" style="text-align-last:center">
+        <option value="H" ${g.venue==='H'?'selected':''}>H</option>
+        <option value="A" ${g.venue==='A'?'selected':''}>A</option>
+        <option value="N" ${g.venue==='N'?'selected':''}>N</option>
+      </select>
+      <input class="gg-input" type="number" min="0" max="20" placeholder="SoT" value="${g.sot ?? ''}" oninput="updateGame('${team}',${i},'sot',this.value)">
+      <select class="gg-input" onchange="updateGame('${team}',${i},'result',this.value)" style="text-align-last:center">
+        <option value="" ${g.result===''?'selected':''}>—</option>
+        <option value="W" ${g.result==='W'?'selected':''}>W</option>
+        <option value="D" ${g.result==='D'?'selected':''}>D</option>
+        <option value="L" ${g.result==='L'?'selected':''}>L</option>
+      </select>
+    </div>
+  `).join('');
+}
+
+function updateGame(team, idx, field, val) {
+  const arr = team === 'A' ? state.gamesA : state.gamesB;
+  if (field === 'gf' || field === 'ga') {
+    arr[idx][field] = val === '' ? null : Math.max(0, parseInt(val));
+  } else if (field === 'sot') {
+    arr[idx][field] = val === '' ? null : Math.max(0, parseInt(val));
+  } else {
+    arr[idx][field] = val;
+  }
+  // auto-derive result from gf/ga if both present and result not manually set differently
+  if ((field === 'gf' || field === 'ga') && arr[idx].gf !== null && arr[idx].ga !== null) {
+    arr[idx].result = arr[idx].gf > arr[idx].ga ? 'W' : arr[idx].gf < arr[idx].ga ? 'L' : 'D';
+    buildGameInputs(team);
+  }
+  checkDataCompleteness();
+  saveState();
+}
+
+function buildH2HUI() {
+  const container = document.getElementById('h2hRows');
+  const nA = (state.teamAName && state.teamAName !== 'HOME TEAM') ? state.teamAName : 'Home';
+  const nB = (state.teamBName && state.teamBName !== 'AWAY TEAM') ? state.teamBName : 'Away';
+  // Update venue hint text
+  const el = id => document.getElementById(id);
+  if (el('h2hVenueNoteA')) el('h2hVenueNoteA').textContent = nA;
+  if (el('h2hVenueNoteB')) el('h2hVenueNoteB').textContent = nB;
+  container.innerHTML = state.h2hGames.map((g, i) => {
+    const v = g.venue || 'H';
+    return `
+    <div class="h2h-row">
+      <span class="game-row-label">${i+1}</span>
+      <input class="gg-input" type="number" min="0" placeholder="${nA}" value="${g.a ?? ''}"
+             oninput="onH2HChange(${i},'a',this.value)" style="text-align:center">
+      <input class="gg-input" type="number" min="0" placeholder="${nB}" value="${g.b ?? ''}"
+             oninput="onH2HChange(${i},'b',this.value)" style="text-align:center">
+      <select class="gg-input" style="padding:7px 2px;text-align-last:center;font-size:12px;font-weight:800;color:${v==='H'?'var(--ac2)':v==='A'?'var(--lb)':'var(--mg)'}"
+              onchange="onH2HChange(${i},'venue',this.value)">
+        <option value="H" ${v==='H'?'selected':''}>🏠 H</option>
+        <option value="A" ${v==='A'?'selected':''}>✈️ A</option>
+        <option value="N" ${v==='N'?'selected':''}>⚪ N</option>
+      </select>
+    </div>`;
+  }).join('');
+}
+function onH2HChange(idx, field, val) {
+  if (field === 'venue') {
+    state.h2hGames[idx].venue = val;
+    buildH2HUI(); // re-render to update select colour
+  } else {
+    state.h2hGames[idx][field] = val === '' ? null : Math.max(0, parseInt(val));
+  }
+  updateH2HSummary();
+  saveState();
+}
+function onH2HScoreChange(idx, team, val) { onH2HChange(idx, team, val); }
+
+function updateH2HSummary() {
+  const st  = getH2HStats();
+  const el  = id => document.getElementById(id);
+  const summaryBox = el('h2hSummaryBox');
+  const trendRow   = el('h2hTrendRow');
+  const bonusEl    = el('h2hBonus');
+  const nameA = document.getElementById('teamAName').value || 'Home';
+  const nameB = document.getElementById('teamBName').value || 'Away';
+
+  // Keep col-header labels in sync with team names
+  if (el('h2hHomeLabel'))  el('h2hHomeLabel').textContent  = nameA;
+  if (el('h2hAwayLabel'))  el('h2hAwayLabel').textContent  = nameB;
+  if (el('h2hVenueNoteA')) el('h2hVenueNoteA').textContent = nameA;
+  if (el('h2hVenueNoteB')) el('h2hVenueNoteB').textContent = nameB;
+  if (el('h2hHomeLbl'))    el('h2hHomeLbl').textContent    = nameA + ' H W%';
+  if (el('h2hAwayLbl'))    el('h2hAwayLbl').textContent    = nameA + ' A W%';
+
+  if (!st) {
+    if (summaryBox) summaryBox.style.display = 'none';
+    if (trendRow)   trendRow.style.display   = 'none';
+    if (bonusEl)    bonusEl.textContent = 'H2H Bonus: +0';
+    return;
+  }
+
+  if (summaryBox) summaryBox.style.display = 'grid';
+
+  // Basic stats
+  if (el('h2hRecord'))   el('h2hRecord').textContent   = `${st.aWins}–${st.draws}–${st.bWins}`;
+  if (el('h2hAvgTotal')) el('h2hAvgTotal').textContent = st.avgTotal;
+  if (el('h2hBtts'))     el('h2hBtts').textContent     = `${st.bttsRate}%`;
+
+  // Venue win % cells
+  const setWinCell = (elId, pct) => {
+    const c = el(elId);
+    if (!c) return;
+    if (pct === null) { c.textContent = '—'; c.style.color = 'var(--mg)'; return; }
+    c.textContent = pct + '%';
+    c.style.color = pct >= 60 ? 'var(--gf)' : pct <= 30 ? 'var(--rf)' : 'var(--wh)';
+  };
+  setWinCell('h2hHomeVenueWin', st.homeVenueWinPct);
+  setWinCell('h2hAwayVenueWin', st.awayVenueWinPct);
+
+  // Venue split badge
+  const vsEl = el('h2hVenueSplit');
+  if (vsEl) {
+    const { H, A, N } = st.venueSplit;
+    const parts = [];
+    if (H > 0) parts.push(`${H}×H`);
+    if (A > 0) parts.push(`${A}×A`);
+    if (N > 0) parts.push(`${N}×N`);
+    vsEl.textContent = parts.length ? parts.join(' / ') : '—';
+  }
+
+  // Trend pill
+  if (trendRow) trendRow.style.display = 'flex';
+  const pill = el('h2hTrendPill');
+  const dom  = el('h2hDominance');
+  if (pill) {
+    pill.textContent     = st.trend === 'rising' ? '📈 Rising' : st.trend === 'falling' ? '📉 Falling' : '➡️ Stable';
+    pill.style.background = st.trend === 'rising' ? 'rgba(47,212,128,.15)' : st.trend === 'falling' ? 'rgba(240,80,106,.12)' : 'rgba(143,174,156,.12)';
+    pill.style.color     = st.trend === 'rising' ? '#6EE7B7' : st.trend === 'falling' ? '#FCA5A5' : 'var(--mg)';
+  }
+
+  // Dominance string — enriched with venue context
+  let domText = st.dominant === 'A' ? `${nameA} leads H2H` : st.dominant === 'B' ? `${nameB} leads H2H` : 'H2H evenly matched';
+  if (st.homeVenueGames.length >= 2 && st.homeVenueWinPct !== null) {
+    if (st.homeVenueWinPct >= 67) domText += ` · ${nameA} dominant at home in this rivalry`;
+    else if (st.homeVenueWinPct === 0) domText += ` · ${nameA} never wins at home vs ${nameB}`;
+  }
+  if (st.awayVenueGames.length >= 2 && st.awayVenueWinPct !== null) {
+    if (st.awayVenueWinPct >= 67) domText += ` · also wins away`;
+    else if (st.awayVenueWinPct === 0) domText += ` · struggles when away`;
+  }
+  if (dom) { dom.textContent = domText; dom.style.color = st.dominant !== 'even' ? 'var(--ac2)' : 'var(--mg)'; }
+
+  // Goal-rate nudge
+  const L = getEffectiveLeague();
+  const leagueAvgTotal = L.avgHomeGF + L.avgAwayGF;
+  let bonus = 0;
+  if (st.avgTotal >= leagueAvgTotal + 0.8) bonus = 0.3;
+  else if (st.avgTotal <= leagueAvgTotal - 0.8) bonus = -0.3;
+  if (bonusEl) bonusEl.textContent = `H2H Goal-Rate Adj: ${bonus >= 0 ? '+' : ''}${bonus.toFixed(1)} xG`;
+}
+
+function factorial(n) { let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; }
+function poissonP(k, lambda) { return Math.exp(-lambda) * Math.pow(lambda, k) / factorial(k); }
+
+function tauDC(x, y, lambdaH, lambdaA, rho) {
+  if (x === 0 && y === 0) return 1 - (lambdaH * lambdaA * rho);
+  if (x === 0 && y === 1) return 1 + (lambdaH * rho);
+  if (x === 1 && y === 0) return 1 + (lambdaA * rho);
+  if (x === 1 && y === 1) return 1 - rho;
+  return 1;
+}
+
+function buildScoreMatrix(lambdaH, lambdaA, rho, maxGoals) {
+  maxGoals = maxGoals || 8;
+  const matrix = [];
+  let sum = 0;
+  for (let x = 0; x <= maxGoals; x++) {
+    matrix[x] = [];
+    for (let y = 0; y <= maxGoals; y++) {
+      let p = poissonP(x, lambdaH) * poissonP(y, lambdaA) * tauDC(x, y, lambdaH, lambdaA, rho);
+      if (p < 0) p = 0;
+      matrix[x][y] = p;
+      sum += p;
+    }
+  }
+  for (let x = 0; x <= maxGoals; x++)
+    for (let y = 0; y <= maxGoals; y++)
+      matrix[x][y] /= sum;
+  return matrix;
+}
+
+function deriveMarkets(matrix, maxGoals) {
+  maxGoals = maxGoals || 8;
+  let pHome = 0, pDraw = 0, pAway = 0, btts = 0;
+  const ouLines = [0.5, 1.5, 2.5, 3.5, 4.5];
+  const totalsOU = {};
+  ouLines.forEach(l => totalsOU[l] = { over: 0, under: 0 });
+  let cleanSheetHome = 0, cleanSheetAway = 0;
+  let homeWinTo1 = 0, homeWinBy2plus = 0, awayWinTo1 = 0, awayWinBy2plus = 0;
+  const teamTotalsHome = {}; const teamTotalsAway = {};
+  [0.5,1.5,2.5].forEach(l => { teamTotalsHome[l] = {over:0,under:0}; teamTotalsAway[l] = {over:0,under:0}; });
+  const scorelines = [];
+
+  for (let x = 0; x <= maxGoals; x++) {
+    for (let y = 0; y <= maxGoals; y++) {
+      const p = matrix[x][y];
+      if (x > y) { pHome += p; if (x - y === 1) homeWinTo1 += p; else homeWinBy2plus += p; }
+      else if (x === y) pDraw += p;
+      else { pAway += p; if (y - x === 1) awayWinTo1 += p; else awayWinBy2plus += p; }
+
+      if (x >= 1 && y >= 1) btts += p;
+      if (y === 0) cleanSheetHome += p;
+      if (x === 0) cleanSheetAway += p;
+
+      const total = x + y;
+      ouLines.forEach(l => { if (total > l) totalsOU[l].over += p; else totalsOU[l].under += p; });
+      [0.5,1.5,2.5].forEach(l => {
+        if (x > l) teamTotalsHome[l].over += p; else teamTotalsHome[l].under += p;
+        if (y > l) teamTotalsAway[l].over += p; else teamTotalsAway[l].under += p;
+      });
+
+      scorelines.push({ score: `${x}-${y}`, p, x, y });
+    }
+  }
+  scorelines.sort((a, b) => b.p - a.p);
+
+  // Double chance & Draw No Bet derived directly from 1X2
+  const dc1X = pHome + pDraw;
+  const dcX2 = pDraw + pAway;
+  const dc12 = pHome + pAway;
+  const dnbHome = pHome / (pHome + pAway);
+  const dnbAway = pAway / (pHome + pAway);
+
+  return {
+    pHome, pDraw, pAway, btts, bttsNo: 1 - btts,
+    totalsOU, cleanSheetHome, cleanSheetAway,
+    homeWinTo1, homeWinBy2plus, awayWinTo1, awayWinBy2plus,
+    teamTotalsHome, teamTotalsAway,
+    dc1X, dcX2, dc12, dnbHome, dnbAway,
+    topScorelines: scorelines.slice(0, 6),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// xG DERIVATION — recency-weighted attack/defense strength
+// ═══════════════════════════════════════════════════════════════════════
+function weightedAvg(values, weights) {
+  let wsum = 0, sum = 0;
+  values.forEach((v, i) => {
+    const w = weights[i] ?? 0.6;
+    sum += v * w; wsum += w;
+  });
+  return wsum > 0 ? sum / wsum : 0;
+}
+
+// Build per-game arrays from raw match rows, ordering preserved (most recent first as entered)
+function extractFormArrays(games) {
+  const gf = games.map(g => g.gf ?? 0);
+  const ga = games.map(g => g.ga ?? 0);
+  return { gf, ga };
+}
+
+function computeXG() {
+  const L = getEffectiveLeague();
+  const gA = state.gamesA, gB = state.gamesB;
+
+  const aComplete = gA.every(g => g.gf !== null && g.ga !== null);
+  const bComplete = gB.every(g => g.gf !== null && g.ga !== null);
+  if (!aComplete || !bComplete) return { invalid: true };
+
+  const { gf: aGFarr, ga: aGAarr } = extractFormArrays(gA);
+  const { gf: bGFarr, ga: bGAarr } = extractFormArrays(gB);
+
+  const aGF = weightedAvg(aGFarr, RECENCY_W);
+  const aGA = weightedAvg(aGAarr, RECENCY_W);
+  const bGF = weightedAvg(bGFarr, RECENCY_W);
+  const bGA = weightedAvg(bGAarr, RECENCY_W);
+
+  // SoT-based attack quality adjustment
+  // Conversion rate (goals/SoT) reveals whether raw GF is driven by volume or efficiency.
+  // League average conversion is ~0.30 goals/SoT. A team with high SoT but low GF is
+  // unlucky/due regression upward; high GF but low SoT is overperforming and due regression down.
+  // We blend the SoT-implied goal rate 40% into the raw weighted GF (60%) to partially
+  // regress finishing luck while not overweighting SoT alone.
+  const LEAGUE_AVG_CONVERSION = 0.30; // goals per shot on target, league-level benchmark
+  const aSOT_avail = gA.filter(g => g.sot !== null && g.sot > 0);
+  const bSOT_avail = gB.filter(g => g.sot !== null && g.sot > 0);
+  let aGFAdj = aGF, bGFAdj = bGF;
+  if (aSOT_avail.length >= 3) {
+    const aSotAvg = weightedAvg(aSOT_avail.map(g => g.sot), RECENCY_W.slice(0, aSOT_avail.length));
+    const aConvRate = weightedAvg(aSOT_avail.map(g => g.sot > 0 ? g.gf/g.sot : 0), RECENCY_W.slice(0, aSOT_avail.length));
+    // SoT-implied expected goals: SoT volume × league-average conversion (neutralises hot/cold streaks)
+    const aSotImplied = aSotAvg * LEAGUE_AVG_CONVERSION;
+    aGFAdj = aGF * 0.60 + aSotImplied * 0.40;
+  }
+  if (bSOT_avail.length >= 3) {
+    const bSotAvg = weightedAvg(bSOT_avail.map(g => g.sot), RECENCY_W.slice(0, bSOT_avail.length));
+    const bSotImplied = bSotAvg * LEAGUE_AVG_CONVERSION;
+    bGFAdj = bGF * 0.60 + bSotImplied * 0.40;
+  }
+
+  // Attack/defense strength ratios vs a single NEUTRAL league baseline (average of home & away
+  // scoring rates). Both teams are normalized on the same scale regardless of venue — this is what
+  // makes the model symmetric: two teams with identical underlying form get identical strength
+  // ratings. Home advantage and the home/away split are then applied ONCE, explicitly, below —
+  // never baked into the normalization baseline itself (that would double-count the home effect
+  // and make "neutral venue" mathematically impossible to express).
+  const leagueAvgGF = (L.avgHomeGF + L.avgAwayGF) / 2;
+  const leagueAvgGA = (L.avgHomeGA + L.avgAwayGA) / 2;
+
+  const attackA = aGFAdj / leagueAvgGF;
+  const defenseA = aGA / leagueAvgGA;
+  const attackB = bGFAdj / leagueAvgGF;
+  const defenseB = bGA / leagueAvgGA;
+
+  // Home advantage: zeroed if neutral venue toggle is on
+  const homeAdv = state.neutralVenue ? 0 : L.homeAdv;
+
+  let lambdaH = attackA * defenseB * leagueAvgGF + homeAdv;
+  let lambdaA = attackB * defenseA * leagueAvgGF;
+
+  // ── Context adjustments ──
+  const adjustments = [];
+
+  // Knockout / cup mode: direct goal-output suppression (~10%), applied here rather than at the
+  // normalization baseline so it doesn't get cancelled out by a team's own unaltered form data.
+  if (state.knockoutMode) {
+    lambdaH *= L.goalSuppression;
+    lambdaA *= L.goalSuppression;
+    adjustments.push(`Both sides ×${L.goalSuppression} xG (knockout/cup mode — tighter, lower-scoring football)`);
+  }
+
+  // Rest differential: each day of rest advantage beyond 1 day = small xG nudge (fatigue effect)
+  if (state.restA !== null && state.restB !== null) {
+    const restDiff = state.restA - state.restB;
+    if (Math.abs(restDiff) >= 2) {
+      const restBonus = Math.min(0.15, Math.abs(restDiff) * 0.025);
+      if (restDiff > 0) { lambdaH += restBonus; adjustments.push(`Home +${restBonus.toFixed(2)} xG (rest advantage)`); }
+      else { lambdaA += restBonus; adjustments.push(`Away +${restBonus.toFixed(2)} xG (rest advantage)`); }
+    }
+  }
+
+  // Key players out: each missing key player ~ -0.08 xG for that side (attack quality degradation)
+  if (state.injA) { const pen = Math.min(0.35, state.injA * 0.08); lambdaH = Math.max(0.15, lambdaH - pen); adjustments.push(`Home -${pen.toFixed(2)} xG (${state.injA} key player(s) out)`); }
+  if (state.injB) { const pen = Math.min(0.35, state.injB * 0.08); lambdaA = Math.max(0.15, lambdaA - pen); adjustments.push(`Away -${pen.toFixed(2)} xG (${state.injB} key player(s) out)`); }
+
+  // Motivation context
+  if (state.motivation === 'dead_rubber_home') { lambdaH *= 0.85; adjustments.push('Home -15% xG (dead rubber — nothing to play for)'); }
+  if (state.motivation === 'dead_rubber_away') { lambdaA *= 0.85; adjustments.push('Away -15% xG (dead rubber — nothing to play for)'); }
+  if (state.motivation === 'title' || state.motivation === 'relegation') {
+    lambdaH *= 0.93; lambdaA *= 0.93;
+    adjustments.push(`Both sides -7% xG (high-stakes six-pointer — tighter, more cautious football)`);
+  }
+  if (state.motivation === 'derby') {
+    adjustments.push('Derby flagged — expect more cards/fouls; goal output less predictable than model alone suggests');
+  }
+
+  // H2H goal-rate nudge (small, capped — same spirit as BMA's H2H bonus but goal-rate based not points)
+  const h2hSt = getH2HStats();
+  let h2hOverlap = false;
+  if (h2hSt && h2hSt.count >= 2) {
+    const leagueAvgTotal = L.avgHomeGF + L.avgAwayGF;
+    // overlap check: do H2H totals match input game totals too closely + same fixture context (knockout legs)
+    const allGameTotals = [...gA, ...gB].map(g => g.gf + g.ga);
+    let overlapCount = 0;
+    h2hSt.complete.forEach(h => {
+      const t = h.a + h.b;
+      if (allGameTotals.some(gt => Math.abs(gt - t) <= 1)) overlapCount++;
+    });
+    if (overlapCount >= 2 && state.knockoutMode) {
+      h2hOverlap = true;
+    } else {
+      if (h2hSt.avgTotal >= leagueAvgTotal + 0.8) { lambdaH *= 1.06; lambdaA *= 1.06; adjustments.push('H2H history runs high-scoring — +6% xG both sides'); }
+      else if (h2hSt.avgTotal <= leagueAvgTotal - 0.8) { lambdaH *= 0.94; lambdaA *= 0.94; adjustments.push('H2H history runs low-scoring — -6% xG both sides'); }
+    }
+  }
+
+  // ── Standing-based quality adjustment ──
+  // When season record / league position is entered, the full-season win rate provides
+  // an independent quality signal that can validate (or contradict) the 6-game form window.
+  // We apply a small blended nudge: if the form window dramatically over- or understates
+  // the team's true season-wide quality, partially regress toward the season picture.
+  const standCtx = getStandingContext();
+  if (standCtx) {
+    // Win-rate divergence: short-form win rate vs season win rate
+    const { formDivA, formDivB } = standCtx;
+    // formDivA > 0 = team is in better recent form than their season average (may be genuinely hot, or small-sample luck)
+    // formDivA < 0 = team is in worse recent form than season average (may be in a genuine dip, or fixture difficulty)
+    // Apply a partial regression: 20% pull back toward season baseline when divergence is large (≥25%)
+    if (formDivA !== null && Math.abs(formDivA) >= 0.25) {
+      const pull = formDivA * 0.20 * lambdaH;
+      lambdaH -= pull; // negative formDiv pulls lambda down; positive formDiv (over-performing) also reduces (regresses)
+      adjustments.push(`Home λ adjusted ${pull >= 0 ? '-' : '+'}${Math.abs(pull).toFixed(2)} xG (season-form divergence: ${formDivA > 0 ? 'recent form better than season avg' : 'recent form worse than season avg'})`);
+    }
+    if (formDivB !== null && Math.abs(formDivB) >= 0.25) {
+      const pull = formDivB * 0.20 * lambdaA;
+      lambdaA -= pull;
+      adjustments.push(`Away λ adjusted ${pull >= 0 ? '-' : '+'}${Math.abs(pull).toFixed(2)} xG (season-form divergence: ${formDivB > 0 ? 'recent form better than season avg' : 'recent form worse than season avg'})`);
+    }
+    // Six-pointer suppression: both sides in top-tier or bottom-tier → cautious match
+    if ((standCtx.tierA === 'top' && standCtx.tierB === 'top') || (standCtx.tierA === 'bottom' && standCtx.tierB === 'bottom')) {
+      lambdaH *= 0.94; lambdaA *= 0.94;
+      adjustments.push('Both sides -6% xG (standing-detected six-pointer — typically tight, cautious football)');
+    }
+  }
+
+  lambdaH = Math.max(0.15, Math.min(5.5, lambdaH));
+  lambdaA = Math.max(0.15, Math.min(5.5, lambdaA));
+
+  return {
+    invalid: false,
+    lambdaH, lambdaA, attackA, defenseA, attackB, defenseB,
+    aGF, aGA, bGF, bGA, aGFAdj, bGFAdj,
+    aSOT_avail, bSOT_avail,
+    homeAdv, adjustments, h2hOverlap, h2hSt, standCtx,
+    rho: L.rho, league: L,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FULL ANALYSIS — combines xG engine + Dixon-Coles + alerts + confidence
+// ═══════════════════════════════════════════════════════════════════════
+function calcFullAnalysis() {
+  const xg = computeXG();
+  if (xg.invalid) return { invalid: true };
+
+  const matrix = buildScoreMatrix(xg.lambdaH, xg.lambdaA, xg.rho);
+  const markets = deriveMarkets(matrix);
+
+  const gA = state.gamesA, gB = state.gamesB;
+  const L = xg.league;
+
+  // ── Form streak helpers ──
+  const formStr = (games) => games.map(g => g.result || (g.gf>g.ga?'W':g.gf<g.ga?'L':'D')).join('');
+  const winRate = (games) => games.filter(g => g.gf > g.ga).length / games.length;
+  const cleanSheetRate = (games) => games.filter(g => g.ga === 0).length / games.length;
+  const failedToScoreRate = (games) => games.filter(g => g.gf === 0).length / games.length;
+  const avgGF = (games) => games.reduce((s,g)=>s+g.gf,0)/games.length;
+  const avgGA = (games) => games.reduce((s,g)=>s+g.ga,0)/games.length;
+
+  const formA = formStr(gA), formB = formStr(gB);
+  const winRateA = winRate(gA), winRateB = winRate(gB);
+
+  // ── 12-CHECK ALERT SYSTEM ──
+  const alerts = [];
+
+  // 1. SoT-based conversion efficiency (replaces xG± — uses SoT data you entered)
+  const CONV_AVG = 0.30; // league benchmark: ~1 goal per 3.3 shots on target
+  const aSotMatches = gA.filter(g => g.sot !== null && g.sot > 0);
+  if (aSotMatches.length >= 3) {
+    const aSotAvg = aSotMatches.reduce((s,g)=>s+g.sot,0)/aSotMatches.length;
+    const aConv = aSotMatches.reduce((s,g)=>s+g.gf,0) / aSotMatches.reduce((s,g)=>s+g.sot,0);
+    if (aConv >= 0.45) alerts.push({type:'warn',label:'Home Overconverting SoT',msg:`Home converting ${(aConv*100).toFixed(0)}% of SoT vs league avg ~30%. High-efficiency streaks historically regress — factor this in before backing at short odds.`});
+    else if (aConv <= 0.16) alerts.push({type:'info',label:'Home Underconverting SoT',msg:`Home converting only ${(aConv*100).toFixed(0)}% of SoT. They're creating chances but not scoring — underlying quality is better than raw GF suggests. Possible value if odds are depressed.`});
+    else alerts.push({type:'ok',label:'Home SoT Efficiency',msg:`Home converting ${(aConv*100).toFixed(0)}% of SoT — close to league average, no outlier regression risk.`});
+  } else { alerts.push({type:'ok',label:'Home SoT Efficiency',msg:'Fewer than 3 SoT entries — efficiency check skipped. Adding SoT data sharpens accuracy.'}); }
+
+  const bSotMatches = gB.filter(g => g.sot !== null && g.sot > 0);
+  if (bSotMatches.length >= 3) {
+    const bSotAvg = bSotMatches.reduce((s,g)=>s+g.sot,0)/bSotMatches.length;
+    const bConv = bSotMatches.reduce((s,g)=>s+g.gf,0) / bSotMatches.reduce((s,g)=>s+g.sot,0);
+    if (bConv >= 0.45) alerts.push({type:'warn',label:'Away Overconverting SoT',msg:`Away converting ${(bConv*100).toFixed(0)}% of SoT vs league avg ~30%. High-efficiency streaks historically regress.`});
+    else if (bConv <= 0.16) alerts.push({type:'info',label:'Away Underconverting SoT',msg:`Away converting only ${(bConv*100).toFixed(0)}% of SoT. Underlying attacking quality is better than raw goals suggest.`});
+    else alerts.push({type:'ok',label:'Away SoT Efficiency',msg:`Away converting ${(bConv*100).toFixed(0)}% of SoT — within normal range.`});
+  } else { alerts.push({type:'ok',label:'Away SoT Efficiency',msg:'Fewer than 3 SoT entries — efficiency check skipped.'}); }
+
+  // 2. Small sample volatility (blowout distortion)
+  const allGoalDiffs = [...gA, ...gB].map(g => Math.abs(g.gf - g.ga));
+  const hasBlowout = allGoalDiffs.some(d => d >= 4);
+  if (hasBlowout) alerts.push({type:'warn',label:'Blowout In Sample',msg:'A 4+ goal margin sits inside the 6-game window — can skew the average sharply. Verify it wasn\'t a one-off (red card, dead rubber, cup mismatch).'});
+  else alerts.push({type:'ok',label:'Blowout In Sample',msg:'No extreme blowout distorting the sample'});
+
+  // 3. Venue-mismatch warning (home team's "home" games include away/neutral fixtures)
+  const aHomeGames = gA.filter(g => g.venue === 'H').length;
+  const bAwayGames = gB.filter(g => g.venue === 'A').length;
+  if (aHomeGames < 3) alerts.push({type:'warn',label:'Home Sample Venue Mix',msg:`Only ${aHomeGames}/6 of the home team's entered matches were actually played at home. True home form may be thinner than it looks.`});
+  else alerts.push({type:'ok',label:'Home Sample Venue Mix',msg:'Home form sample is genuinely home-heavy'});
+  if (bAwayGames < 3) alerts.push({type:'warn',label:'Away Sample Venue Mix',msg:`Only ${bAwayGames}/6 of the away team's entered matches were actually played away. True away form may be thinner than it looks.`});
+  else alerts.push({type:'ok',label:'Away Sample Venue Mix',msg:'Away form sample is genuinely away-heavy'});
+
+  // 4. Defensive solidity vs attacking output conflict
+  const aCS = cleanSheetRate(gA), bCS = cleanSheetRate(gB);
+  const combinedXG = xg.lambdaH + xg.lambdaA;
+  if ((aCS >= 0.5 || bCS >= 0.5) && combinedXG >= 2.8) {
+    alerts.push({type:'warn',label:'Defense-Attack Conflict',msg:'One side has kept clean sheets in 50%+ of recent games, yet the model projects a high-scoring match. Reconcile before trusting the Over lean.'});
+  } else { alerts.push({type:'ok',label:'Defense-Attack Conflict',msg:'No conflict between defensive solidity and projected total'}); }
+
+  // 5. Failed-to-score pattern
+  const aFTS = failedToScoreRate(gA), bFTS = failedToScoreRate(gB);
+  if (aFTS >= 0.5) alerts.push({type:'warn',label:'Home Scoring Drought',msg:`Home failed to score in ${Math.round(aFTS*100)}% of recent matches. BTTS-Yes and Over bets carry elevated risk on this side.`});
+  if (bFTS >= 0.5) alerts.push({type:'warn',label:'Away Scoring Drought',msg:`Away failed to score in ${Math.round(bFTS*100)}% of recent matches. BTTS-Yes and Over bets carry elevated risk on this side.`});
+  if (aFTS < 0.5 && bFTS < 0.5) alerts.push({type:'ok',label:'Scoring Droughts',msg:'Neither side shows a significant scoring drought'});
+
+  // 6. Form-strength mismatch / pace conflict (analogous to BMA's Pace Conflict)
+  const formGap = Math.abs(winRateA - winRateB);
+  if (formGap >= 0.5) alerts.push({type:'warn',label:'Form Mismatch',msg:`Large gap in recent win rates (${Math.round(winRateA*100)}% vs ${Math.round(winRateB*100)}%). Model favors the stronger side heavily — verify this isn't inflated by weak fixture lists.`});
+  else alerts.push({type:'ok',label:'Form Mismatch',msg:'Recent form levels are reasonably comparable'});
+
+  // 7. Ultra-low / ultra-high combined xG flag
+  if (combinedXG <= 1.8) alerts.push({type:'info',label:'⚡ Ultra-Low Scoring Projection',msg:`Combined xG of ${combinedXG.toFixed(2)} is very low. Strong Under 2.5 signal — but a single set-piece or red card can flip a 0-0 into chaos.`});
+  if (combinedXG >= 3.6) alerts.push({type:'info',label:'⚡ Ultra-High Scoring Projection',msg:`Combined xG of ${combinedXG.toFixed(2)} is very high. Strong Over 2.5 / BTTS signal, but verify neither team is resting players.`});
+
+  // 8. H2H overlap (knockout two-legged ties)
+  if (xg.h2hOverlap) alerts.push({type:'info',label:'⚡ H2H Overlap Detected',msg:'H2H results overlap with your input match data (common in two-legged knockout ties) — the goal-rate nudge was neutralised to avoid double-counting the same matches.'});
+
+  // 9. SoT coverage check
+  const aSotCoverage = gA.filter(g => g.sot !== null).length;
+  const bSotCoverage = gB.filter(g => g.sot !== null).length;
+  if (aSotCoverage === 0 && bSotCoverage === 0) {
+    alerts.push({type:'warn',label:'No SoT Data',msg:'No shots-on-target data entered for either team. Model relies on raw goals only, which carries more finishing-luck variance. SoT is available on every FotMob and Sofascore match page.'});
+  } else if (aSotCoverage < 4 || bSotCoverage < 4) {
+    alerts.push({type:'info',label:'Partial SoT Coverage',msg:`SoT data entered for ${aSotCoverage}/6 home matches and ${bSotCoverage}/6 away matches — more entries = sharper conversion-efficiency signal.`});
+  } else {
+    alerts.push({type:'ok',label:'SoT Coverage',msg:`Good SoT coverage: ${aSotCoverage}/6 home, ${bSotCoverage}/6 away. Conversion-efficiency signal is active.`});
+  }
+
+  // 10. Missing context inputs
+  if (state.restA === null || state.restB === null) alerts.push({type:'info',label:'Rest Days Not Entered',msg:'Days-rest context missing — fixture-congestion fatigue effects are not factored into this projection.'});
+  if (!state.injA && !state.injB) alerts.push({type:'ok',label:'Squad Availability',msg:'No key absences flagged — model assumes full-strength sides'});
+
+  // 11. Odds-implied probability mismatch (value bet flag, only fires if odds entered)
+  let valueFlags = [];
+  if (state.oddsHome && state.oddsDraw && state.oddsAway) {
+    const impliedH = 1/state.oddsHome, impliedD = 1/state.oddsDraw, impliedA = 1/state.oddsAway;
+    const overround = impliedH + impliedD + impliedA;
+    const fairH = impliedH/overround, fairD = impliedD/overround, fairA = impliedA/overround;
+    const edgeH = markets.pHome - fairH, edgeD = markets.pDraw - fairD, edgeA = markets.pAway - fairA;
+    [
+      {label:'Home', edge: edgeH, odds: state.oddsHome, modelP: markets.pHome},
+      {label:'Draw', edge: edgeD, odds: state.oddsDraw, modelP: markets.pDraw},
+      {label:'Away', edge: edgeA, odds: state.oddsAway, modelP: markets.pAway},
+    ].forEach(o => {
+      if (o.edge >= 0.05) valueFlags.push(o);
+    });
+    if (valueFlags.length) {
+      alerts.push({type:'info',label:'💎 Value Detected',msg:`Model probability exceeds the bookmaker's implied (overround-adjusted) probability on: ${valueFlags.map(v=>v.label).join(', ')}. See Value Bet Detector card below.`});
+    } else {
+      alerts.push({type:'ok',label:'Value Check',msg:'No meaningful edge vs entered bookmaker lines — market appears efficiently priced here'});
+    }
+  }
+
+  // 11b. Standing-based alerts (season form vs window divergence, six-pointer auto-detection)
+  const sc = getStandingContext();
+  if (sc) {
+    if (sc.formDivA !== null && sc.formDivA >= 0.30) alerts.push({type:'warn',label:'Home Form Window Better Than Season',msg:`Home wins ${(sc.formDivA*100).toFixed(0)}pp more in the last 6 games than their full-season average suggests. This could be a genuine momentum peak — or small-sample luck. Verify fixture difficulty.`});
+    if (sc.formDivA !== null && sc.formDivA <= -0.30) alerts.push({type:'warn',label:'Home Form Window Worse Than Season',msg:`Home wins ${(Math.abs(sc.formDivA)*100).toFixed(0)}pp less recently than their season average. May be a genuine dip or a tough run of fixtures — check recent opponents.`});
+    if (sc.formDivB !== null && sc.formDivB >= 0.30) alerts.push({type:'warn',label:'Away Form Window Better Than Season',msg:`Away's recent win rate ${(sc.formDivB*100).toFixed(0)}pp above their season average — recent run better than season-wide quality.`});
+    if (sc.formDivB !== null && sc.formDivB <= -0.30) alerts.push({type:'warn',label:'Away Form Window Worse Than Season',msg:`Away's recent win rate ${(Math.abs(sc.formDivB)*100).toFixed(0)}pp below their season average — recent dip vs true quality.`});
+    if (sc.tierA === 'top' && sc.tierB === 'top') alerts.push({type:'info',label:'⚡ Title Six-Pointer Detected',msg:'Both sides in the top tier of the table. Standing data confirms six-pointer status — tighter, lower-scoring football is typical and a goal suppression adjustment has been applied.'});
+    if (sc.tierA === 'bottom' && sc.tierB === 'bottom') alerts.push({type:'info',label:'⚡ Relegation Six-Pointer Detected',msg:'Both sides in the bottom tier. High-motivation, high-stakes clash — historically slightly draw-prone and unpredictable.'});
+    if (!sc.formDivA && !sc.formDivB && !sc.tierA && !sc.tierB) alerts.push({type:'ok',label:'Season Record Entered',msg:'Season record data present but no major divergence detected between form window and full-season picture.'});
+  } else { alerts.push({type:'ok',label:'Season Record',msg:'No season record data entered — window form only.'}); }
+
+  // 11c. Cross-division cup quality gap warning
+  if (isLeagueCup()) {
+    // In cup fixtures, teams from different divisions face each other.
+    // The model only sees recent form — it CANNOT see that one team plays in
+    // Premier League and the other in League One. Flag this prominently.
+    const avgTotalGoalsA = gA.reduce((s,g)=>s+g.gf+g.ga,0)/gA.length;
+    const avgTotalGoalsB = gB.reduce((s,g)=>s+g.gf+g.ga,0)/gB.length;
+    const goalEnvGap = Math.abs(avgTotalGoalsA - avgTotalGoalsB);
+    if (goalEnvGap >= 0.8) {
+      alerts.push({type:'warn',label:'⚠️ Cross-Division Cup Fixture',msg:`The two teams appear to come from different playing environments (avg match totals: ${avgTotalGoalsA.toFixed(1)} vs ${avgTotalGoalsB.toFixed(1)} goals/game). GabGate cannot see divisional quality gaps — if these teams play in different leagues (e.g. EFL Cup: Premier League vs League One), the higher-division side is almost certainly stronger than their recent form alone shows. Treat all probabilities with significant caution and factor in the quality gap manually.`});
+    } else {
+      alerts.push({type:'info',label:'Cup Fixture Mode',msg:'Knockout Mode is active. In cross-division cup fixtures, the model cannot detect divisional quality gaps — if teams play at different levels, manually discount the lower-division side form advantage.'});
+    }
+  }
+
+  // 12. Draw-prone signal (tight matches, low form gap, low combined xG — classic draw conditions)
+  const drawProne = formGap < 0.2 && Math.abs(xg.lambdaH - xg.lambdaA) < 0.3 && combinedXG < 2.6;
+  if (drawProne) alerts.push({type:'info',label:'⚡ Draw-Prone Conditions',msg:'Evenly matched form, similar xG levels, and modest combined scoring — classic conditions for a draw. Consider Draw or Double Chance markets.'});
+
+  const warnCount = alerts.filter(a => a.type === 'warn').length;
+  const totalAlerts = alerts.length;
+  const trapPct = Math.round(warnCount / Math.max(totalAlerts, 10) * 100);
+
+  // ── Confidence score ──
+  // Based on: how decisive the 1X2 split is + how much data quality support exists - trap penalty
+  const topProb = Math.max(markets.pHome, markets.pDraw, markets.pAway);
+  let conf = Math.round(topProb * 100 * 0.85); // base off model's own conviction
+  const aSOTconf = xg.aSOT_avail || []; const bSOTconf = xg.bSOT_avail || [];
+  if (aSOTconf.length >= 3 && bSOTconf.length >= 3) conf += 6; // bonus for SoT-backed data
+  if (xg.h2hSt && xg.h2hSt.count >= 2) conf += 3;
+  conf -= warnCount * 5;
+  conf = Math.max(8, Math.min(95, conf));
+
+  return {
+    invalid: false, xg, matrix, markets, alerts, warnCount, trapPct, conf,
+    formA, formB, winRateA, winRateB, formGap: Math.round(formGap*100),
+    aCS, bCS, aFTS, bFTS, drawProne, valueFlags,
+    combinedXG,
+  };
+}
+
+function getOutcomeClassification(markets) {
+  const top = Math.max(markets.pHome, markets.pDraw, markets.pAway);
+  if (top === markets.pHome) return { cls: 'home', text: `🟠 HOME WIN LEAN (${(markets.pHome*100).toFixed(0)}%)` };
+  if (top === markets.pAway) return { cls: 'away', text: `🟢 AWAY WIN LEAN (${(markets.pAway*100).toFixed(0)}%)` };
+  return { cls: 'draw', text: `⚪ DRAW LEAN (${(markets.pDraw*100).toFixed(0)}%)` };
+}
+
+function getMainSuggestion(r) {
+  const m = r.markets;
+  const top = Math.max(m.pHome, m.pDraw, m.pAway);
+  const nameA = state.teamAName || 'Home', nameB = state.teamBName || 'Away';
+  if (r.trapPct >= 55) return `🚨 HIGH TRAP RISK (${r.warnCount} warnings) — treat all leans with caution`;
+  let outcomeText;
+  if (top === m.pHome) outcomeText = `${nameA} to win (${(m.pHome*100).toFixed(0)}%)`;
+  else if (top === m.pAway) outcomeText = `${nameB} to win (${(m.pAway*100).toFixed(0)}%)`;
+  else outcomeText = `Draw (${(m.pDraw*100).toFixed(0)}%)`;
+
+  if (r.conf >= 70 && r.trapPct <= 20) return `🟢 HIGH CONFIDENCE — ${outcomeText}`;
+  if (r.conf >= 55) return `🟡 LEAN — ${outcomeText}, confirm vs odds movement`;
+  return `🟡 MIXED SIGNAL — ${outcomeText} marginal favorite, consider Double Chance instead`;
+}
+
+function getSecondarySuggestion(r) {
+  const m = r.markets;
+  if (r.drawProne) return '⚖️ Draw-prone match — Double Chance or Draw No Bet reduces variance';
+  if (m.btts >= 0.58) return `🥅 BTTS-Yes at ${(m.btts*100).toFixed(0)}% — strong both-to-score signal`;
+  if (m.totalsOU[2.5].over >= 0.60) return `📈 Over 2.5 at ${(m.totalsOU[2.5].over*100).toFixed(0)}% — high-scoring match projected`;
+  if (m.totalsOU[2.5].under >= 0.60) return `📉 Under 2.5 at ${(m.totalsOU[2.5].under*100).toFixed(0)}% — tight, low-scoring match projected`;
+  if (r.valueFlags && r.valueFlags.length) return `💎 Value detected on ${r.valueFlags.map(v=>v.label).join(', ')} — see Value Bet Detector`;
+  return '📊 Review the full market breakdown below before deciding';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// RENDER ANALYSIS
+// ═══════════════════════════════════════════════════════════════════════
+function runAnalysis() {
+  if (!checkDataCompleteness()) {
+    document.getElementById('dataLockout').style.display = 'flex';
+    document.getElementById('resultsWrap').style.display = 'none';
+    document.getElementById('dataLockout').scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  document.getElementById('dataLockout').style.display = 'none';
+
+  const r = calcFullAnalysis();
+  state.analysis = r;
+  if (r.invalid) return;
+
+  document.getElementById('resultsWrap').style.display = 'block';
+  const m = r.markets, xg = r.xg;
+  const nameA = state.teamAName || 'HOME TEAM', nameB = state.teamBName || 'AWAY TEAM';
+
+  // 1X2 score boxes
+  document.getElementById('scoreDisplay').innerHTML = `
+    <div class="score-box"><div class="score-box-label">Home</div><div class="score-box-name">${nameA}</div><div class="score-box-number">${(m.pHome*100).toFixed(0)}<span class="score-box-denom">%</span></div></div>
+    <div class="score-box combined"><div class="score-box-label">Draw</div><div class="score-box-name">—</div><div class="score-box-number">${(m.pDraw*100).toFixed(0)}<span class="score-box-denom">%</span></div></div>
+    <div class="score-box"><div class="score-box-label">Away</div><div class="score-box-name">${nameB}</div><div class="score-box-number">${(m.pAway*100).toFixed(0)}<span class="score-box-denom">%</span></div></div>
+  `;
+  const cls = getOutcomeClassification(m);
+  const badge = document.getElementById('classificationBadge');
+  badge.className = `classification ${cls.cls}`;
+  badge.textContent = cls.text;
+  document.getElementById('mainSuggestion').textContent = getMainSuggestion(r);
+  document.getElementById('secondarySuggestion').textContent = getSecondarySuggestion(r);
+
+  // Standing context row in results
+  const scRow = document.getElementById('standingContextRow');
+  const sc2 = r.xg.standCtx;
+  if (sc2 && (sc2.sA.pos || sc2.sB.pos || sc2.sA.mp)) {
+    const nA = state.teamAName || 'Home', nB = state.teamBName || 'Away';
+    const mkChip = (s, name) => {
+      if (!s.pos && !s.mp) return `<div class="market-cell"><div class="market-cell-label">${name}</div><div class="market-cell-val" style="font-size:13px">—</div></div>`;
+      if (s.pos) {
+        const t = getStandingTier(s.pos, sc2.total); const c = {top:'var(--ac2)',upper:'var(--gf)',mid:'var(--mg)',lower:'var(--yf)',bottom:'var(--rf)'}[t]||'var(--mg)';
+        const lbl = {top:'Title Zone',upper:'Upper Half',mid:'Mid Table',lower:'Lower Half',bottom:'Drop Zone'}[t];
+        return `<div class="market-cell"><div class="market-cell-label">${name}</div><div class="market-cell-val" style="font-size:16px;color:${c}">P${s.pos}</div><div style="font-size:10px;color:${c};margin-top:2px">${lbl}</div></div>`;
+      }
+      const wr = s.mp>0 ? ((s.w/s.mp)*100).toFixed(0) : 0;
+      return `<div class="market-cell"><div class="market-cell-label">${name}</div><div class="market-cell-val" style="font-size:13px">${s.w}W ${s.d}D ${s.l}L</div><div style="font-size:10px;color:var(--mg);margin-top:2px">Win rate ${wr}%</div></div>`;
+    };
+    scRow.style.display = 'block';
+    scRow.innerHTML = `<div class="market-grid">${mkChip(sc2.sA,nA)}<div class="market-cell best"><div class="market-cell-label">Season</div><div class="market-cell-val" style="font-size:11px;line-height:1.3">${sc2.sA.mp ? sc2.sA.mp + ' played' : '—'}</div></div>${mkChip(sc2.sB,nB)}</div>`;
+  } else { scRow.style.display = 'none'; }
+
+  // xG breakdown
+  document.getElementById('xgHomeLabel').textContent = nameA + ' xG';
+  document.getElementById('xgAwayLabel').textContent = nameB + ' xG';
+  document.getElementById('xgHome').textContent = xg.lambdaH.toFixed(2);
+  document.getElementById('xgAway').textContent = xg.lambdaA.toFixed(2);
+  document.getElementById('xgTotal').textContent = r.combinedXG.toFixed(2);
+
+  const aSotM = state.gamesA.filter(g=>g.sot>0); const bSotM = state.gamesB.filter(g=>g.sot>0);
+  const avgSotA = aSotM.length ? (aSotM.reduce((s,g)=>s+g.sot,0)/aSotM.length).toFixed(1) : '—';
+  const avgSotB = bSotM.length ? (bSotM.reduce((s,g)=>s+g.sot,0)/bSotM.length).toFixed(1) : '—';
+  const convA = aSotM.length>=3 ? ((aSotM.reduce((s,g)=>s+g.gf,0)/aSotM.reduce((s,g)=>s+g.sot,0))*100).toFixed(0)+'%' : '—';
+  const convB = bSotM.length>=3 ? ((bSotM.reduce((s,g)=>s+g.gf,0)/bSotM.reduce((s,g)=>s+g.sot,0))*100).toFixed(0)+'%' : '—';
+  const sc3 = r.xg.standCtx;
+  const wrSeasonA = sc3 && sc3.wrA !== null ? Math.round(sc3.wrA*100)+'%' : '—';
+  const wrSeasonB = sc3 && sc3.wrB !== null ? Math.round(sc3.wrB*100)+'%' : '—';
+  const ratingsA = [
+    {label:'Attack Strength (vs league avg)', val: xg.attackA, display: xg.attackA.toFixed(2)+'x', pct: Math.min(100, xg.attackA/2*100)},
+    {label:'Defense Strength (lower=better)', val: xg.defenseA, display: xg.defenseA.toFixed(2)+'x', pct: Math.min(100, (2-xg.defenseA)/2*100)},
+    {label:'Avg SoT / Conversion Rate', val: 0, display: avgSotA + ' SoT · ' + convA, pct: parseFloat(avgSotA)/12*100||0},
+    {label:'Recent Win Rate (6-game)', val: r.winRateA, display: Math.round(r.winRateA*100)+'%', pct: r.winRateA*100},
+    {label:'Season Win Rate', val: 0, display: wrSeasonA, pct: sc3&&sc3.wrA?sc3.wrA*100:r.winRateA*100},
+    {label:'Clean Sheet Rate', val: r.aCS, display: Math.round(r.aCS*100)+'%', pct: r.aCS*100},
+    {label:'Form (last 6)', val: 0, display: r.formA, pct: r.winRateA*100},
+  ];
+  const ratingsB = [
+    {label:'Attack Strength (vs league avg)', val: xg.attackB, display: xg.attackB.toFixed(2)+'x', pct: Math.min(100, xg.attackB/2*100)},
+    {label:'Defense Strength (lower=better)', val: xg.defenseB, display: xg.defenseB.toFixed(2)+'x', pct: Math.min(100, (2-xg.defenseB)/2*100)},
+    {label:'Avg SoT / Conversion Rate', val: 0, display: avgSotB + ' SoT · ' + convB, pct: parseFloat(avgSotB)/12*100||0},
+    {label:'Recent Win Rate (6-game)', val: r.winRateB, display: Math.round(r.winRateB*100)+'%', pct: r.winRateB*100},
+    {label:'Season Win Rate', val: 0, display: wrSeasonB, pct: sc3&&sc3.wrB?sc3.wrB*100:r.winRateB*100},
+    {label:'Clean Sheet Rate', val: r.bCS, display: Math.round(r.bCS*100)+'%', pct: r.bCS*100},
+    {label:'Form (last 6)', val: 0, display: r.formB, pct: r.winRateB*100},
+  ];
+  const renderRatings = (arr) => arr.map(c => `
+    <div class="rating-item">
+      <div class="rating-item-label">${c.label}</div>
+      <div class="rating-item-bar">
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${Math.max(4,Math.min(100,c.pct))}%"></div></div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:3px;margin-top:2px"><span class="rating-score">${c.display}</span></div>
+    </div>
+  `).join('');
+  document.getElementById('ratingGridA').innerHTML = renderRatings(ratingsA);
+  document.getElementById('ratingGridB').innerHTML = renderRatings(ratingsB);
+
+  // Over/Under market
+  const ouLines = [0.5, 1.5, 2.5, 3.5, 4.5];
+  document.getElementById('ouMarketBody').innerHTML = ouLines.map(l => {
+    const o = m.totalsOU[l];
+    const isBest = o.over > 0.5 ? 'over' : 'under';
+    return `
+      <div class="market-bar-row">
+        <div class="market-bar-head"><span class="nm">Over ${l}</span><span class="pc">${(o.over*100).toFixed(0)}%</span></div>
+        <div class="market-bar-track"><div class="market-bar-fill" style="width:${o.over*100}%"></div></div>
+        <div class="market-bar-head" style="margin-top:4px"><span class="nm">Under ${l}</span><span class="pc">${(o.under*100).toFixed(0)}%</span></div>
+        <div class="market-bar-track"><div class="market-bar-fill" style="width:${o.under*100}%;background:linear-gradient(90deg,#7C5CFF,#A78BFA)"></div></div>
+      </div>`;
+  }).join('');
+
+  // BTTS market
+  document.getElementById('bttsMarketBody').innerHTML = `
+    <div class="market-grid">
+      <div class="market-cell ${m.btts>m.bttsNo?'best':''}"><div class="market-cell-label">BTTS Yes</div><div class="market-cell-val">${(m.btts*100).toFixed(0)}%</div></div>
+      <div class="market-cell ${m.bttsNo>=m.btts?'best':''}"><div class="market-cell-label">BTTS No</div><div class="market-cell-val">${(m.bttsNo*100).toFixed(0)}%</div></div>
+      <div class="market-cell"><div class="market-cell-label">H2H BTTS Rate</div><div class="market-cell-val">${r.xg.h2hSt ? r.xg.h2hSt.bttsRate+'%' : '—'}</div></div>
+    </div>`;
+
+  // Double Chance / DNB
+  document.getElementById('dcMarketBody').innerHTML = `
+    <div class="market-grid" style="margin-bottom:8px">
+      <div class="market-cell"><div class="market-cell-label">1X</div><div class="market-cell-val">${(m.dc1X*100).toFixed(0)}%</div></div>
+      <div class="market-cell"><div class="market-cell-label">12</div><div class="market-cell-val">${(m.dc12*100).toFixed(0)}%</div></div>
+      <div class="market-cell"><div class="market-cell-label">X2</div><div class="market-cell-val">${(m.dcX2*100).toFixed(0)}%</div></div>
+    </div>
+    <div class="market-grid">
+      <div class="market-cell"><div class="market-cell-label">DNB Home</div><div class="market-cell-val">${(m.dnbHome*100).toFixed(0)}%</div></div>
+      <div class="market-cell"><div class="market-cell-label">DNB Away</div><div class="market-cell-val">${(m.dnbAway*100).toFixed(0)}%</div></div>
+    </div>`;
+
+  // Asian Handicap lean (derived from goal-supremacy distribution)
+  const supremacy = xg.lambdaH - xg.lambdaA;
+  let ahLine, ahLean;
+  const absSup = Math.abs(supremacy);
+  if (absSup < 0.25) { ahLine = '0 (DNB-style)'; ahLean = 'Pick-em — too close to call a handicap side'; }
+  else if (absSup < 0.75) { ahLine = '-0.25 / -0.5'; ahLean = (supremacy>0?nameA:nameB) + ' marginal favorite'; }
+  else if (absSup < 1.25) { ahLine = '-0.5 / -0.75'; ahLean = (supremacy>0?nameA:nameB) + ' clear favorite'; }
+  else { ahLine = '-1 or higher'; ahLean = (supremacy>0?nameA:nameB) + ' strong favorite — consider -1 handicap'; }
+  document.getElementById('ahMarketBody').innerHTML = `
+    <div class="market-grid" style="margin-bottom:10px">
+      <div class="market-cell"><div class="market-cell-label">Goal Supremacy</div><div class="market-cell-val">${supremacy>0?'+':''}${supremacy.toFixed(2)}</div></div>
+      <div class="market-cell best"><div class="market-cell-label">Suggested Line</div><div class="market-cell-val" style="font-size:14px">${ahLine}</div></div>
+      <div class="market-cell"><div class="market-cell-label">Home -1</div><div class="market-cell-val">${(m.homeWinBy2plus*100).toFixed(0)}%</div></div>
+    </div>
+    <div class="secondary-box">${ahLean}</div>`;
+
+  // Scorelines
+  document.getElementById('scorelineGrid').innerHTML = m.topScorelines.map(s => `
+    <div class="scoreline-cell"><div class="scoreline-score">${s.score}</div><div class="scoreline-pct">${(s.p*100).toFixed(1)}%</div></div>
+  `).join('');
+
+  // Clean sheet / team totals
+  document.getElementById('cleanSheetBody').innerHTML = `
+    <div class="market-grid" style="margin-bottom:8px">
+      <div class="market-cell"><div class="market-cell-label">${nameA} Clean Sheet</div><div class="market-cell-val">${(m.cleanSheetHome*100).toFixed(0)}%</div></div>
+      <div class="market-cell"><div class="market-cell-label">${nameB} Clean Sheet</div><div class="market-cell-val">${(m.cleanSheetAway*100).toFixed(0)}%</div></div>
+      <div class="market-cell"><div class="market-cell-label">Either Clean Sheet</div><div class="market-cell-val">${((m.cleanSheetHome+m.cleanSheetAway)*100).toFixed(0)}%</div></div>
+    </div>
+    <div class="market-bar-row">
+      <div class="market-bar-head"><span class="nm">${nameA} Over 1.5 goals</span><span class="pc">${(m.teamTotalsHome[1.5].over*100).toFixed(0)}%</span></div>
+      <div class="market-bar-track"><div class="market-bar-fill" style="width:${m.teamTotalsHome[1.5].over*100}%"></div></div>
+    </div>
+    <div class="market-bar-row">
+      <div class="market-bar-head"><span class="nm">${nameB} Over 1.5 goals</span><span class="pc">${(m.teamTotalsAway[1.5].over*100).toFixed(0)}%</span></div>
+      <div class="market-bar-track"><div class="market-bar-fill" style="width:${m.teamTotalsAway[1.5].over*100}%;background:linear-gradient(90deg,#279966,#2FD480)"></div></div>
+    </div>`;
+
+  // Value bet detector
+  const vbCard = document.getElementById('valueBetCard');
+  if (r.valueFlags && r.valueFlags.length) {
+    vbCard.style.display = 'block';
+    document.getElementById('valueBetBody').innerHTML = r.valueFlags.map(v => `
+      <div class="callout green">
+        <span>💎</span>
+        <div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">${v.label} — Edge: +${((v.edge)*100).toFixed(1)}pp</strong>
+        Model probability ${ (v.modelP*100).toFixed(1)}% vs bookmaker implied ${(100/v.odds).toFixed(1)}% at odds ${v.odds.toFixed(2)}. This is a statistical edge estimate, not a guarantee — always size responsibly.</div>
+      </div>`).join('') + `<div style="font-size:11px;color:var(--mg);margin-top:6px">Value = model probability exceeds the bookmaker's overround-adjusted implied probability by 5 percentage points or more.</div>`;
+  } else {
+    vbCard.style.display = 'none';
+  }
+
+  // Signal strength meters
+  document.getElementById('trapPct').textContent = `${r.trapPct}%`;
+  document.getElementById('trapPct').className = `meter-value ${r.trapPct >= 55 ? 'danger' : r.trapPct >= 30 ? 'trap' : 'conf'}`;
+  document.getElementById('confPct').textContent = `${r.conf}%`;
+  document.getElementById('formGap').textContent = `${r.formGap}%`;
+
+  // Alerts
+  document.getElementById('alertsContainer').innerHTML = r.alerts.map(a => `
+    <div class="alert-item ${a.type}"><div><span class="alert-label">${a.label}</span>${a.msg}</div></div>
+  `).join('');
+
+  document.getElementById('resultsWrap').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function showRatingTab(team) {
+  document.getElementById('ratingGridA').style.display = team === 'a' ? 'grid' : 'none';
+  document.getElementById('ratingGridB').style.display = team === 'b' ? 'grid' : 'none';
+  document.getElementById('ratingTabA').className = `tab-btn ${team==='a'?'active':''}`;
+  document.getElementById('ratingTabB').className = `tab-btn ${team==='b'?'active':''}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LIVE HT TRACKER
+// ═══════════════════════════════════════════════════════════════════════
+function calcLive() {
+  const htH = document.getElementById('liveHTHome').value;
+  const htA = document.getElementById('liveHTAway').value;
+  const sotH = parseFloat(document.getElementById('liveSOTHome').value) || 0;
+  const sotA = parseFloat(document.getElementById('liveSOTAway').value) || 0;
+  const redH = parseInt(document.getElementById('liveRedHome').value) || 0;
+  const redA = parseInt(document.getElementById('liveRedAway').value) || 0;
+
+  if (htH === '' || htA === '') {
+    document.getElementById('liveResultWrap').style.display = 'none';
+    return;
+  }
+  const homeGoals = parseInt(htH), awayGoals = parseInt(htA);
+  const htTotal = homeGoals + awayGoals;
+  const combinedSOT = sotH + sotA;
+
+  // Project full-time total: HT goals typically represent ~42-45% of full match goals
+  // (2nd halves run slightly higher-scoring on average due to fatigue/space/subs)
+  const htShare = 0.44;
+  let projTotal = htTotal / htShare;
+
+  // Shot-on-target pace signal as secondary cross-check
+  let paceLabel, paceAdj = 1.0;
+  if (combinedSOT <= 3) { paceLabel = '🔴 Very Slow'; paceAdj = 0.85; }
+  else if (combinedSOT <= 6) { paceLabel = '🟡 Moderate'; paceAdj = 1.0; }
+  else { paceLabel = '🟢 High Tempo'; paceAdj = 1.15; }
+  projTotal = projTotal * 0.7 + (projTotal * paceAdj) * 0.3;
+
+  const totalReds = redH + redA;
+  let suggestion, secondary;
+
+  if (totalReds > 0) {
+    const downTeam = redH > redA ? 'Home' : 'Away';
+    suggestion = `🟥 RED CARD STATE CHANGE — ${downTeam} side reduced. Discard pre-game pace reads.`;
+    secondary = redH !== redA
+      ? `Numerical disadvantage typically suppresses the down team's output and can open space for the side with extra man. Re-evaluate 1X2 and Over/Under independently of the HT score alone.`
+      : `Both sides have a man off — chaotic, high-variance second half likely. Wide outcome range.`;
+  } else if (htTotal === 0 && combinedSOT <= 4) {
+    suggestion = '🔴 STRONG UNDER SIGNAL — Goalless HT, low combined shots on target';
+    secondary = `${combinedSOT} combined SOT at the break is genuinely low tempo. Historically the single most reliable live Under signal in soccer.`;
+  } else if (htTotal === 0 && combinedSOT >= 7) {
+    suggestion = '🟡 GOALLESS BUT LIVE — Chances created despite scoreless HT';
+    secondary = `${combinedSOT} combined SOT shows real tempo despite no goals yet — profligate finishing or strong keeper play. Over remains live for 2nd half.`;
+  } else if (htTotal >= 3) {
+    suggestion = '🟢 STRONG OVER SIGNAL — High-scoring first half already';
+    secondary = `${htTotal} goals at the break. Game state (chasing/leading) usually keeps the 2nd half open too — Over confirmed unless a team shuts up shop with a big lead.`;
+  } else if (Math.abs(homeGoals - awayGoals) >= 2) {
+    suggestion = '⚠️ COMMANDING LEAD AT HT — Game state risk for 2nd-half Under';
+    secondary = 'Leading teams often sit deeper and manage the game in the 2nd half, which can suppress further goals — but trailing teams sometimes push numbers forward, raising BTTS/Over risk too.';
+  } else {
+    suggestion = '🟡 MIXED — Moderate HT signal, confirm at the 60-65 minute mark';
+    secondary = `Projected FT total ≈ ${projTotal.toFixed(1)} goals based on HT pace. Re-check after the first 15 minutes of the 2nd half.`;
+  }
+
+  document.getElementById('liveResultWrap').style.display = 'block';
+  document.getElementById('liveSuggestion').textContent = suggestion;
+  document.getElementById('liveSecondary').textContent = secondary;
+  document.getElementById('liveProjTotal').textContent = projTotal.toFixed(1);
+  document.getElementById('livePace').textContent = paceLabel;
+  const bttsLikely = (homeGoals === 0 || awayGoals === 0) ? (combinedSOT >= 6 ? '🟡 Possible' : '🔴 Unlikely') : '✅ Already Yes';
+  document.getElementById('liveBtts').textContent = bttsLikely;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SAVE / FIXTURE LOG
+// ═══════════════════════════════════════════════════════════════════════
+function saveToLog() {
+  const r = state.analysis;
+  if (!r || r.invalid) { showToast('⛔ Cannot save — incomplete data'); return; }
+  const m = r.markets, xg = r.xg;
+  const cls = getOutcomeClassification(m);
+
+  const fixture = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('en-GB'),
+    dateISO: new Date().toISOString().split('T')[0],
+    league: state.league,
+    knockoutMode: state.knockoutMode,
+    neutralVenue: state.neutralVenue,
+    teamA: state.teamAName || 'Home Team',
+    teamB: state.teamBName || 'Away Team',
+    pHome: +(m.pHome*100).toFixed(1), pDraw: +(m.pDraw*100).toFixed(1), pAway: +(m.pAway*100).toFixed(1),
+    classification: cls.cls,
+    suggestion: getMainSuggestion(r),
+    secondary: getSecondarySuggestion(r),
+    trapPct: r.trapPct, conf: r.conf,
+    lambdaH: +xg.lambdaH.toFixed(2), lambdaA: +xg.lambdaA.toFixed(2),
+    combinedXG: +r.combinedXG.toFixed(2),
+    over25: +(m.totalsOU[2.5].over*100).toFixed(1),
+    under25: +(m.totalsOU[2.5].under*100).toFixed(1),
+    btts: +(m.btts*100).toFixed(1),
+    topScoreline: m.topScorelines[0].score,
+    topScorelineP: +(m.topScorelines[0].p*100).toFixed(1),
+    alerts: r.alerts,
+    warnCount: r.warnCount,
+    teamAName: state.teamAName, teamBName: state.teamBName,
+    valueFlags: r.valueFlags || [],
+    standA: state.standA, standB: state.standB,
+    h2hGames: state.h2hGames.map(g => ({...g})),
+    notes: '',
+  };
+  const fixtures = getFixtures();
+  fixtures.unshift(fixture);
+  saveFixtures(fixtures);
+  showToast('✅ Saved to Picks log');
+}
+
+function renderFixtureLog() {
+  const fixtures = getFixtures();
+  const list = document.getElementById('fixtureList');
+  const empty = document.getElementById('fixtureEmpty');
+  const statsWrap = document.getElementById('fixtureStats');
+  const staleWarning = document.getElementById('picksStaleWarning');
+  const header = document.getElementById('picksHeader');
+
+  // Populate league filter once
+  const filterSel = document.getElementById('filterLeague');
+  if (filterSel.options.length <= 1) {
+    const leaguesUsed = [...new Set(fixtures.map(f => f.league))];
+    leaguesUsed.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l; opt.textContent = l;
+      filterSel.appendChild(opt);
+    });
+  }
+
+  if (!fixtures.length) {
+    list.innerHTML = ''; empty.style.display = 'block'; statsWrap.style.display = 'none';
+    staleWarning.style.display = 'none';
+    header.textContent = "Today's Picks";
+    return;
+  }
+  empty.style.display = 'none';
+
+  const todayISO = new Date().toISOString().split('T')[0];
+  const todayCount = fixtures.filter(f => f.dateISO === todayISO).length;
+  if (todayCount === 0) {
+    staleWarning.style.display = 'flex';
+    header.textContent = 'Recent Picks';
+  } else {
+    staleWarning.style.display = 'none';
+    header.textContent = "Today's Picks";
+  }
+
+  const leagueFilter = filterSel.value;
+  const confFilter = parseInt(document.getElementById('filterConf').value) || 0;
+  let filtered = fixtures;
+  if (leagueFilter) filtered = filtered.filter(f => f.league === leagueFilter);
+  if (confFilter) filtered = filtered.filter(f => f.conf >= confFilter);
+
+  statsWrap.style.display = 'block';
+  const total = filtered.length;
+  const home = filtered.filter(f=>f.classification==='home').length;
+  const draw = filtered.filter(f=>f.classification==='draw').length;
+  const away = filtered.filter(f=>f.classification==='away').length;
+  const avgConf = total ? Math.round(filtered.reduce((a,f)=>a+f.conf,0)/total) : 0;
+  document.getElementById('fixtureStatsBody').innerHTML = `
+    <div class="rating-grid" style="gap:6px">
+      <div class="rating-item" style="text-align:center"><div class="rating-item-label">Total Picks</div><div class="rating-score" style="font-size:26px">${total}</div></div>
+      <div class="rating-item" style="text-align:center"><div class="rating-item-label">Avg Confidence</div><div class="rating-score" style="font-size:26px">${avgConf}%</div></div>
+      <div class="rating-item" style="text-align:center;border-color:var(--ac)"><div class="rating-item-label" style="color:var(--ac2)">Home Leans</div><div class="rating-score" style="font-size:26px;color:var(--ac2)">${home}</div></div>
+      <div class="rating-item" style="text-align:center;border-color:var(--mg)"><div class="rating-item-label">Draw Leans</div><div class="rating-score" style="font-size:26px;color:var(--mg)">${draw}</div></div>
+      <div class="rating-item" style="text-align:center;border-color:var(--lb)"><div class="rating-item-label" style="color:var(--lb)">Away Leans</div><div class="rating-score" style="font-size:26px;color:var(--lb)">${away}</div></div>
+      <div class="rating-item" style="text-align:center"><div class="rating-item-label">High Trap (≥50%)</div><div class="rating-score" style="font-size:26px;color:var(--yf)">${filtered.filter(f=>f.trapPct>=50).length}</div></div>
+    </div>`;
+
+  list.innerHTML = filtered.map(f => `
+    <div class="fixture-item" onclick="openFxDetail(${f.id})">
+      <div class="fixture-top">
+        <div><div class="fixture-teams">${f.teamA} vs ${f.teamB}</div><div class="fixture-date">${f.date} · ${f.league}${f.knockoutMode?' · 🏆 Knockout':''}</div></div>
+        <button class="fixture-delete" onclick="event.stopPropagation();deleteFixture(${f.id})">🗑</button>
+      </div>
+      <div class="fixture-scores">
+        <span class="fixture-score-chip">1: ${f.pHome}%</span>
+        <span class="fixture-score-chip">X: ${f.pDraw}%</span>
+        <span class="fixture-score-chip">2: ${f.pAway}%</span>
+        <span class="fixture-badge ${f.classification}">${f.classification.toUpperCase()}</span>
+        <span class="fixture-score-chip" style="color:${f.trapPct>=50?'var(--rf)':f.trapPct>=25?'var(--yf)':'var(--gf)'}">Trap: ${f.trapPct}%</span>
+        <span class="fixture-score-chip">Conf: ${f.conf}%</span>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--mg);line-height:1.3">${f.suggestion}</div>
+      <div class="fixture-tap-hint">👆 Tap to view full analysis</div>
+    </div>`).join('');
+}
+
+function deleteFixture(id) {
+  const fixtures = getFixtures().filter(f => f.id !== id);
+  saveFixtures(fixtures);
+  renderFixtureLog();
+  showToast('🗑 Pick deleted');
+}
+function clearAllFixtures() {
+  if (!confirm('Clear all saved picks? This cannot be undone.')) return;
+  saveFixtures([]);
+  renderFixtureLog();
+  showToast('🗑 All picks cleared');
+}
+
+function openFxDetail(id) {
+  const f = getFixtures().find(x => x.id === id);
+  if (!f) return;
+  const sheet = document.getElementById('fxModalSheet');
+  sheet.innerHTML = `
+    <button class="modal-close" onclick="closeFxModal()">✕</button>
+    <div style="clear:both;padding-top:8px">
+      <div class="team-header a" style="margin-bottom:2px">${f.teamA} vs ${f.teamB}</div>
+      <div style="font-size:12px;color:var(--mg);margin-bottom:14px">${f.date} · ${f.league}${f.knockoutMode?' · 🏆 Knockout Mode':''}${f.neutralVenue?' · ⚪ Neutral':''}</div>
+
+      <div class="market-grid" style="margin-bottom:10px">
+        <div class="market-cell ${f.classification==='home'?'best':''}"><div class="market-cell-label">Home</div><div class="market-cell-val">${f.pHome}%</div></div>
+        <div class="market-cell ${f.classification==='draw'?'best':''}"><div class="market-cell-label">Draw</div><div class="market-cell-val">${f.pDraw}%</div></div>
+        <div class="market-cell ${f.classification==='away'?'best':''}"><div class="market-cell-label">Away</div><div class="market-cell-val">${f.pAway}%</div></div>
+      </div>
+
+      <div class="suggestion-box">${f.suggestion}</div>
+      <div class="secondary-box" style="margin-top:6px">${f.secondary}</div>
+
+      <div class="market-grid" style="margin-top:12px">
+        <div class="market-cell"><div class="market-cell-label">xG Home</div><div class="market-cell-val">${f.lambdaH}</div></div>
+        <div class="market-cell"><div class="market-cell-label">xG Away</div><div class="market-cell-val">${f.lambdaA}</div></div>
+        <div class="market-cell"><div class="market-cell-label">Combined</div><div class="market-cell-val">${f.combinedXG}</div></div>
+      </div>
+      ${(f.h2hGames && f.h2hGames.some(g => g.a !== null)) ? (() => {
+        const nA = f.teamA, nB = f.teamB;
+        const hdr = '<div style="display:grid;grid-template-columns:16px 1fr 1fr 1fr;gap:6px;margin-bottom:6px">' +
+          '<span></span>' +
+          '<span style="font-size:9px;color:var(--mg);font-weight:700;text-align:center;text-transform:uppercase">' + nA + '</span>' +
+          '<span style="font-size:9px;color:var(--mg);font-weight:700;text-align:center;text-transform:uppercase">' + nB + '</span>' +
+          '<span style="font-size:9px;color:var(--mg);font-weight:700;text-align:center;text-transform:uppercase">Venue</span></div>';
+        const rows = f.h2hGames.filter(g => g.a !== null).map((g, i) => {
+          const v = g.venue || 'H';
+          const vText = v==='H' ? nA+' Home' : v==='A' ? nB+' Home' : 'Neutral';
+          const vCol  = v==='H' ? 'var(--ac2)' : v==='A' ? 'var(--lb)' : 'var(--mg)';
+          const sCol  = g.a > g.b ? 'var(--ac2)' : g.b > g.a ? 'var(--lb)' : 'var(--mg)';
+          return '<div style="display:grid;grid-template-columns:16px 1fr 1fr 1fr;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--dg)">' +
+            '<span style="font-size:10px;color:var(--mg)">' + (i+1) + '</span>' +
+            '<span style="font-family:Barlow Condensed,sans-serif;font-size:22px;font-weight:800;color:' + sCol + ';text-align:center">' + g.a + '</span>' +
+            '<span style="font-family:Barlow Condensed,sans-serif;font-size:22px;font-weight:800;color:' + sCol + ';text-align:center">' + g.b + '</span>' +
+            '<span style="font-size:10px;font-weight:700;color:' + vCol + ';text-align:center;background:rgba(0,0,0,.25);border-radius:5px;padding:3px 5px">' + vText + '</span></div>';
+        }).join('');
+        return '<div class="section-divider"><span>H2H Results</span></div>' + hdr + rows;
+      })() : ''}
+      ${(f.standA && (f.standA.pos || f.standA.mp)) ? `
+      <div class="section-divider"><span>Season Record</span></div>
+      <div class="market-grid">
+        <div class="market-cell"><div class="market-cell-label">${f.teamA}</div><div class="market-cell-val" style="font-size:14px">${f.standA.pos ? 'P'+f.standA.pos : (f.standA.mp ? f.standA.w+'W '+f.standA.d+'D '+f.standA.l+'L' : '—')}</div>${f.standA.mp ? '<div style="font-size:10px;color:var(--mg);margin-top:2px">'+f.standA.mp+' played</div>' : ''}</div>
+        <div class="market-cell"><div class="market-cell-label">MP / W / D / L</div><div class="market-cell-val" style="font-size:13px">${f.standA.mp||'—'} / ${f.standA.w||'—'} / ${f.standA.d||'—'} / ${f.standA.l||'—'}</div></div>
+        <div class="market-cell"><div class="market-cell-label">${f.teamB}</div><div class="market-cell-val" style="font-size:14px">${f.standB.pos ? 'P'+f.standB.pos : (f.standB.mp ? f.standB.w+'W '+f.standB.d+'D '+f.standB.l+'L' : '—')}</div>${f.standB.mp ? '<div style="font-size:10px;color:var(--mg);margin-top:2px">'+f.standB.mp+' played</div>' : ''}</div>
+      </div>` : ''}
+
+      <div class="market-grid" style="margin-top:8px">
+        <div class="market-cell"><div class="market-cell-label">Over 2.5</div><div class="market-cell-val">${f.over25}%</div></div>
+        <div class="market-cell"><div class="market-cell-label">BTTS Yes</div><div class="market-cell-val">${f.btts}%</div></div>
+        <div class="market-cell"><div class="market-cell-label">Top Score</div><div class="market-cell-val" style="font-size:15px">${f.topScoreline} (${f.topScorelineP}%)</div></div>
+      </div>
+
+      <div class="meter-row" style="margin-top:12px">
+        <div class="meter-box"><div class="meter-label">Trap Risk</div><div class="meter-value ${f.trapPct>=55?'danger':f.trapPct>=30?'trap':'conf'}">${f.trapPct}%</div></div>
+        <div class="meter-box"><div class="meter-label">Confidence</div><div class="meter-value conf">${f.conf}%</div></div>
+      </div>
+
+      <div class="section-divider"><span>Full Alert Breakdown</span></div>
+      ${f.alerts.map(a => `<div class="alert-item ${a.type}"><div><span class="alert-label">${a.label}</span>${a.msg}</div></div>`).join('')}
+    </div>`;
+  document.getElementById('fxModalOverlay').classList.add('active');
+}
+function closeFxModal() {
+  document.getElementById('fxModalOverlay').classList.remove('active');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TOAST / RESET
+// ═══════════════════════════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function confirmReset() {
+  if (!confirm('Reset the current form? Saved picks in your log will NOT be affected.')) return;
+  state.teamAName = ''; state.teamBName = '';
+  state.gamesA = Array.from({length: NUM_GAMES}, () => ({gf:null,ga:null,venue:'H',sot:null,result:''}));
+  state.gamesB = Array.from({length: NUM_GAMES}, () => ({gf:null,ga:null,venue:'A',sot:null,result:''}));
+  state.h2hGames = Array.from({length: 4}, () => ({a:null,b:null,venue:'H'}));
+  state.restA = null; state.restB = null; state.injA = null; state.injB = null;
+  state.motivation = 'normal';
+  state.oddsHome = null; state.oddsDraw = null; state.oddsAway = null; state.oddsOver25 = null;
+  state.knockoutMode = false; state.neutralVenue = false;
+  state.standA = {pos:null,total:null,mp:null,w:null,d:null,l:null};
+  state.standB = {pos:null,total:null,mp:null,w:null,d:null,l:null};
+  state.analysis = null;
+  saveState();
+  buildInputUI();
+  document.getElementById('resultsWrap').style.display = 'none';
+  document.getElementById('dataLockout').style.display = 'none';
+  showToast('🔄 Form reset');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// IN-APP GUIDE
+// ═══════════════════════════════════════════════════════════════════════
+function renderGuide() {
+  document.getElementById('guideContent').innerHTML = `
+    <div class="guide-block">
+      <h4>STEP 1 — Select League / Competition</h4>
+      <p>Choose the correct competition. This calibrates the league-average goal rates, home-advantage size, and the Dixon-Coles ρ (rho) low-score correction — everything downstream depends on this being right.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 1b — Knockout / Cup Mode</h4>
+      <p>Toggle ON for finals, two-legged ties, and playoff-style knockout football. Goal output is structurally suppressed (~8-10%) versus league play because teams sit deeper and manage risk. Leaving this OFF for a cup final will overstate goals.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 1c — Neutral Venue</h4>
+      <p>Toggle ON for international tournament matches played at neutral venues (World Cup, EUROs, Copa América group/knockout games not hosted by either team). This zeroes out home-advantage xG, which is otherwise worth roughly 0.30 goals.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 2 — Enter Last 6 Matches Per Team</h4>
+      <p>GF (goals for) and GA (goals against) are required for every row. Venue (H/A/N) and SoT (shots on target in that match) are optional but materially improve accuracy — SoT lets the model measure conversion efficiency and distinguish teams that are genuinely dangerous from those riding a hot streak. Always available on FotMob and Sofascore.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 3 — Season Record &amp; League Standing</h4></div><div class='guide-block'><p>For league fixtures, enter each team's season MP/W/D/L and league position. GabGate uses this to auto-detect six-pointers (title race, relegation battle), validate recent form against the full-season picture, and apply a small regression nudge when the 6-game window diverges significantly from the season average. Skip for cup/friendly matches.</p></div><div class='guide-block'><h4>STEP 4 — Context Inputs</h4>
+      <p>Days rest captures fixture-congestion fatigue. Key players out applies a small per-player xG penalty to that side's attack. Motivation context (title race, relegation six-pointer, dead rubber, derby) nudges goal expectancy to reflect how teams actually approach high- or low-stakes matches.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 4 — Head-to-Head</h4>
+      <p>Enter up to 4 recent meetings. GabGate nudges the goal-rate projection toward the H2H scoring pattern, but caps the effect and automatically neutralises it if your H2H entries overlap with your last-6-matches data (common in two-legged knockout ties) to avoid double-counting.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 5 — Bookmaker Lines (Optional)</h4>
+      <p>Enter decimal odds for 1X2 to activate the Value Bet Detector. GabGate strips the bookmaker's overround (margin) to get a fair implied probability, then compares it against the model's own probability. A 5+ percentage point edge is flagged.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 6 — Run Analysis &amp; Read the Output</h4>
+      <p>Review the 1X2 split, the xG breakdown, every market card, the Trap Risk %, and the Confidence %. Trap Risk ≥55% means the alert system found enough contradictory signals that no lean should be trusted pre-game.</p>
+    </div>
+    <div class="guide-block">
+      <h4>STEP 7 — Save &amp; Confirm Live</h4>
+      <p>Tap Save Pick to log the analysis. Once the match kicks off, switch to the Live HT tab the moment half-time arrives and enter the HT score, shots on target, and any red cards — this is the single most reliable confirmation signal in the entire app.</p>
+    </div>
+
+    <div class="section-divider"><span>The Engine — Dixon-Coles xG Model</span></div>
+    <div class="guide-block">
+      <p>GabGate is built on the <strong style="color:var(--ac2)">Dixon-Coles bivariate Poisson model</strong> (1997) — still the academic and industry baseline for soccer prediction nearly three decades later. Goals in football are rare, largely independent events, which makes the Poisson distribution a strong natural fit for modelling how many goals each side will score.</p>
+      <p style="margin-top:8px">Each team gets an <strong style="color:var(--ac2)">attack rating</strong> (their goals-for, recency-weighted across the last 6 games, divided by the league-average) and a <strong style="color:var(--ac2)">defense rating</strong> (goals-against vs league-average). Expected goals (xG) for each side = their attack strength × the opponent's defense weakness × the league's baseline scoring rate, plus a home-advantage adjustment.</p>
+      <p style="margin-top:8px">The model then builds a full scoreline probability grid (0-0 through 8-8) using the Poisson formula, with the <strong style="color:var(--ac2)">Dixon-Coles ρ (rho) correction</strong> applied to the four low-scoring cells (0-0, 1-0, 0-1, 1-1) — because independent Poisson alone under-predicts draws and over-predicts narrow 1-0/0-1 wins. Every market in the app (1X2, O/U, BTTS, correct score, clean sheets, handicap lean) is summed directly from that one probability grid, so every number you see is internally consistent with every other number.</p>
+    </div>
+
+    <div class="section-divider"><span>Accuracy &amp; Limitations</span></div>
+    <div class="callout green">
+      <span>✅</span>
+      <div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">What this model does well</strong>
+      Dixon-Coles-family models are the published academic and industry baseline for soccer. Independent published benchmarks show roughly 49-52% raw accuracy on 3-way (1X2) outcomes in top-five European leagues, rising to roughly 64-72% on the subset of matches where model probability is ≥65% confident — exactly why GabGate surfaces a Confidence % rather than presenting every match as equally certain.</div>
+    </div>
+    <div class="callout amber">
+      <span>⚠️</span>
+      <div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">Known limitations</strong>
+      A 6-game sample is still small — one red-card blowout or dead-rubber result can skew an average. There is no live injury-news feed, no weather data, no referee tendency data, and no set-piece-specific modelling. Lower-tier and lower-division leagues have thinner real-world calibration than the top 5 European leagues. The draw outcome is structurally the hardest of the three 1X2 results to call precisely — even the Dixon-Coles correction only partially closes that gap.</div>
+    </div>
+    <div class="callout red">
+      <span>⚖️</span>
+      <div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">Golden rule</strong>
+      GabGate is a statistical decision-support tool, not a guaranteed outcome predictor. No model — including the ones used inside sportsbooks themselves — beats the market consistently enough to remove risk. Treat every output as one structured input into your own judgment, never as financial advice, and never stake more than you can afford to lose.</div>
+    </div>
+
+    <div class="section-divider"><span>Alert System — 12 Checks</span></div>
+    <div class="guide-block">
+      <p>Every analysis runs 12 independent checks (xG-divergence on each side, blowout-in-sample, venue-mix integrity on each side, defense/attack conflict, scoring-drought patterns, form mismatch, ultra-low/high projection flags, H2H overlap, missing-data caution, missing context, value-vs-odds, and draw-prone conditions). The ratio of WARN results to total checks determines Trap Risk % — high trap risk means contradictory signals were found and no single lean should be trusted blindly.</p>
+    </div>
+
+    <div class="section-divider"><span>Market Glossary</span></div>
+    <div class="guide-block">
+      <p><strong style="color:var(--ac2)">1X2:</strong> Home win / Draw / Away win — the three-way full-time result market.<br>
+      <strong style="color:var(--ac2)">Double Chance:</strong> Covers two of the three 1X2 outcomes in one bet (1X, X2, or 12) — lower payout, lower variance.<br>
+      <strong style="color:var(--ac2)">Draw No Bet (DNB):</strong> Stake refunded if the match is a draw; otherwise resolves on the winner. Removes draw risk entirely.<br>
+      <strong style="color:var(--ac2)">Over/Under (O/U):</strong> Whether total match goals exceed or fall short of a stated line (e.g. 2.5).<br>
+      <strong style="color:var(--ac2)">BTTS:</strong> Both Teams To Score — Yes if both sides score at least once.<br>
+      <strong style="color:var(--ac2)">Asian Handicap:</strong> A goal-start/handicap applied to even out a mismatched fixture; GabGate suggests a lean line based on projected goal supremacy.<br>
+      <strong style="color:var(--ac2)">Correct Score:</strong> The exact final scoreline — inherently the hardest market to hit; shown here as the model's top 6 most likely scorelines, not a single confident pick.</p>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════════
+function init() {
+  loadState();
+  buildInputUI();
+  loadApiKeyIntoField();
+  if (state.analysis) {
+    // do not auto-rerun heavy render on load; user can re-run, but show nothing stale
+  }
+  navigateTo('analyze');
+  updateStandingCardVisibility();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// GEMINI AUTOFILL ENGINE — GabGate v1.2
+// Uses Gemini 2.5 Flash with Google Search grounding to fetch team data
+// ═══════════════════════════════════════════════════════════════════════
+
+// ── API KEY MANAGEMENT ──
+function getApiKey() {
+  return localStorage.getItem('gabgate_gemini_key') || '';
+}
+function saveApiKey() {
+  const key = document.getElementById('geminiApiKey').value.trim();
+  if (!key) { showToast('⛔ Enter an API key first'); return; }
+  localStorage.setItem('gabgate_gemini_key', key);
+  updateApiStatusChip();
+  showToast('✅ API key saved');
+}
+function onApiKeyInput() {
+  const v = document.getElementById('geminiApiKey').value.trim();
+  const chip = document.getElementById('apiStatusChip');
+  chip.className = 'api-status-chip ' + (v ? 'none' : 'none');
+  chip.innerHTML = v ? '⬤ &nbsp;Key entered (not yet saved)' : '⬤ &nbsp;No key saved';
+}
+function toggleKeyVisibility() {
+  const inp = document.getElementById('geminiApiKey');
+  const btn = document.getElementById('keyVisBtn');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+function updateApiStatusChip() {
+  const chip = document.getElementById('apiStatusChip');
+  if (!chip) return;
+  const key = getApiKey();
+  if (!key) { chip.className = 'api-status-chip none'; chip.innerHTML = '⬤ &nbsp;No key saved'; return; }
+  chip.className = 'api-status-chip ok'; chip.innerHTML = '✅ &nbsp;Key saved — ' + key.slice(0,6) + '••••••••';
+}
+function loadApiKeyIntoField() {
+  const key = getApiKey();
+  const field = document.getElementById('geminiApiKey');
+  if (field && key) field.value = key;
+  updateApiStatusChip();
+}
+
+async function testApiConnection() {
+  const key = getApiKey();
+  const chip = document.getElementById('apiStatusChip');
+  const result = document.getElementById('apiTestResult');
+  if (!key) { showToast('⛔ Save an API key first'); return; }
+  chip.className = 'api-status-chip testing'; chip.innerHTML = '<span class="spin">⟳</span> &nbsp;Testing…';
+  result.style.display = 'block'; result.textContent = 'Sending test request to Gemini…';
+  try {
+    const resp = await callGemini('Say exactly: GABGATE_OK', false, key);
+    if (resp.includes('GABGATE_OK')) {
+      chip.className = 'api-status-chip ok'; chip.innerHTML = '✅ &nbsp;Connected — Gemini 2.5 Flash responding';
+      result.style.color = 'var(--gf)'; result.textContent = '✅ Connection successful. Autofill is ready to use.';
+    } else {
+      throw new Error('Unexpected response: ' + resp.slice(0,100));
+    }
+  } catch(e) {
+    chip.className = 'api-status-chip err'; chip.innerHTML = '❌ &nbsp;Connection failed';
+    result.style.color = 'var(--rf)'; result.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+// ── CORE GEMINI API CALL ──
+async function callGemini(prompt, useSearch, apiKey) {
+  const key = apiKey || getApiKey();
+  if (!key) throw new Error('No API key saved. Go to Settings → Gemini API Key.');
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 4000,
+    }
+  };
+
+  // Add Google Search grounding tool when searching for live data
+  if (useSearch) {
+    body.tools = [{ google_search: {} }];
+  }
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    const msg = err?.error?.message || `HTTP ${resp.status}`;
+    throw new Error(msg);
+  }
+
+  const data = await resp.json();
+  const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+  if (!text) throw new Error('Empty response from Gemini');
+  return text;
+}
+
+// ── TEAM NAME SYNC (top away field → bottom teamBName field) ──
+function syncTeamBFromTop() {
+  const val = document.getElementById('teamBNameTop').value;
+  const field = document.getElementById('teamBName');
+  if (field) { field.value = val; state.teamBName = val || 'AWAY TEAM'; saveState(); }
+}
+
+// ── AUTOFILL MAIN ──
+async function runAutofill() {
+  const nameA = document.getElementById('teamAName').value.trim();
+  const nameB = document.getElementById('teamBNameTop').value.trim() ||
+                document.getElementById('teamBName').value.trim();
+
+  if (!nameA || !nameB) { showToast('⛔ Enter both team names first'); return; }
+  if (!getApiKey()) { showToast('⛔ Add your Gemini API key in Settings first'); navigateTo('settings'); return; }
+
+  document.getElementById('teamBName').value = nameB;
+  state.teamBName = nameB;
+  document.getElementById('teamBNameTop').value = nameB;
+
+  const btn = document.getElementById('autofillBtn');
+  btn.disabled = true;
+  setAutofillStatus('running', '⟳', 'Pass 1 — fetching recent results, season records & H2H…');
+
+  try {
+    const today = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'});
+
+    // ── PASS 1: Fetch all structural match data (scores, results, standing, H2H) ──
+    // SoT is deliberately excluded here — we get it with targeted per-match queries in Pass 2.
+    const pass1Prompt = `You are a soccer data assistant. Today is ${today}.
+
+Upcoming fixture: HOME = "${nameA}" vs AWAY = "${nameB}".
+
+Search ESPN, Sofascore, FotMob, FBref, football-reference.com, Transfermarkt and Wikipedia.
+Return ONLY a raw JSON object — NO markdown fences, NO backticks, NO explanation.
+
+Schema:
+{
+  "competition": "competition name",
+  "homeTeam": "${nameA}",
+  "awayTeam": "${nameB}",
+  "homeForm": [
+    {"gf":2,"ga":1,"venue":"H","opponent":"Real Madrid","date":"15 Jun 2025"},
+    {"gf":0,"ga":0,"venue":"A","opponent":"Barcelona","date":"08 Jun 2025"}
+  ],
+  "awayForm": [
+    {"gf":1,"ga":2,"venue":"A","opponent":"Arsenal","date":"14 Jun 2025"}
+  ],
+  "homeStanding": {"pos":3,"mp":28,"w":16,"d":6,"l":6,"totalTeams":20},
+  "awayStanding": {"pos":9,"mp":28,"w":11,"d":8,"l":9,"totalTeams":20},
+  "h2h": [
+    {"homeScore":2,"awayScore":1,"date":"10 Jan 2025","homeTeam":"${nameA}","venue":"H"},
+    {"homeScore":1,"awayScore":1,"date":"20 Sep 2024","homeTeam":"${nameB}","venue":"A"},
+    {"homeScore":0,"awayScore":0,"date":"15 Mar 2024","homeTeam":"neutral","venue":"N"}
+  ],
+  "confidence": "HIGH",
+  "notes": "brief note"
+}
+
+RULES:
+- homeForm/awayForm: exactly 6 entries each, most recent FIRST. Include opponent name and date.
+- gf = goals scored BY THAT TEAM in that match. ga = goals conceded BY THAT TEAM.
+- venue = "H" home, "A" away, "N" neutral — always from THAT TEAM's perspective.
+- result field is NOT needed — it will be derived from gf/ga.
+- sot field is NOT needed in Pass 1 — omit it entirely.
+- Standing fields (pos, mp, w, d, l, totalTeams) MUST be null for ANY cup fixture,
+  international match, or cross-division competition (EFL Cup, FA Cup, Copa del Rey, Champions League,
+  Europa League, World Cup, Friendlies etc.) — in these competitions teams from different
+  divisions/countries play each other and league position is meaningless.
+- Only fill standing fields for proper league fixtures where BOTH teams play in the SAME league.
+- Do NOT invent scores. If fewer than 6 matches found, include only real ones.
+- Return ONLY the raw JSON object.`;
+
+    const raw1 = await callGemini(pass1Prompt, true);
+    const clean1 = raw1.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    const data = JSON.parse(clean1);
+
+    // ── PASS 2: Targeted SoT lookup per match ──
+    // Build a combined list of all matches needing SoT from both teams' form
+    const allMatches = [];
+    (data.homeForm || []).forEach((m, i) => allMatches.push({ team: data.homeTeam || nameA, opponent: m.opponent, date: m.date, side: 'home', idx: i }));
+    (data.awayForm || []).forEach((m, i) => allMatches.push({ team: data.awayTeam || nameB, opponent: m.opponent, date: m.date, side: 'away', idx: i }));
+
+    // Only proceed with SoT pass if we have opponent/date info
+    const hasMeta = allMatches.some(m => m.opponent && m.date);
+
+    if (hasMeta) {
+      setAutofillStatus('running', '⟳', 'Pass 2 — fetching Shots on Target for each match…');
+
+      // Build one combined SoT query covering all matches (cheaper than N separate calls)
+      const matchList = allMatches
+        .filter(m => m.opponent && m.date)
+        .map(m => `- ${m.team} vs ${m.opponent} on ${m.date}`)
+        .join('\n');
+
+      const pass2Prompt = `You are a soccer statistics assistant. Today is ${today}.
+
+I need the exact Shots on Target (SoT) for each team in the following matches.
+Search Sofascore, FotMob, ESPN, BBC Sport, Whoscored, Fbref for match stats pages.
+
+Matches to find SoT for:
+${matchList}
+
+Return ONLY a raw JSON array — NO markdown fences, NO backticks, NO explanation.
+Each entry must follow this exact format:
+[
+  {"team":"${nameA}","opponent":"Real Madrid","date":"15 Jun 2025","sot":5},
+  {"team":"${nameA}","opponent":"Barcelona","date":"08 Jun 2025","sot":3},
+  ...
+]
+
+RULES:
+- sot = the number of shots on target BY the named TEAM in that match (not the opponent).
+- If you find a match stats page but SoT is listed as "shots" only (not on target), use null not a guess.
+- If you genuinely cannot find SoT for a match after searching, use null for that entry.
+- Never hallucinate SoT values — only include real values you found on a stats page.
+- Return ONLY the raw JSON array. No markdown.`;
+
+      try {
+        const raw2 = await callGemini(pass2Prompt, true);
+        const clean2 = raw2.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+        const sotArr = JSON.parse(clean2);
+
+        // Merge SoT values back into data.homeForm and data.awayForm
+        if (Array.isArray(sotArr)) {
+          sotArr.forEach(entry => {
+            if (typeof entry.sot !== 'number') return;
+            const teamNorm = (entry.team || '').toLowerCase().trim();
+            const homeNorm = (data.homeTeam || nameA).toLowerCase().trim();
+            const awayNorm = (data.awayTeam || nameB).toLowerCase().trim();
+            const oppNorm = (entry.opponent || '').toLowerCase().trim();
+            const dateNorm = (entry.date || '').toLowerCase().trim();
+
+            const isHome = teamNorm.includes(homeNorm.split(' ')[0]) || homeNorm.includes(teamNorm.split(' ')[0]);
+
+            const targetForm = isHome ? data.homeForm : data.awayForm;
+            if (!targetForm) return;
+
+            // Match by opponent name or date similarity
+            const matchIdx = targetForm.findIndex(m => {
+              const mOpp = (m.opponent || '').toLowerCase();
+              const mDate = (m.date || '').toLowerCase();
+              return mOpp.includes(oppNorm.split(' ')[0]) || oppNorm.includes(mOpp.split(' ')[0]) ||
+                     mDate.includes(dateNorm.split(' ')[0]) || dateNorm === mDate;
+            });
+
+            if (matchIdx !== -1 && targetForm[matchIdx].sot === undefined || targetForm[matchIdx].sot === null) {
+              targetForm[matchIdx].sot = Math.max(0, Math.round(entry.sot));
+            }
+          });
+        }
+      } catch(sotErr) {
+        // SoT pass failed — not fatal, continue with null SoT
+        console.warn('SoT pass 2 failed:', sotErr.message);
+        data.notes = (data.notes || '') + ' (SoT lookup failed — fill manually from Sofascore)';
+      }
+    }
+
+    setAutofillStatus('running', '⟳', 'Filling in all fields…');
+    applyAutofillData(data, nameA, nameB);
+
+  } catch(e) {
+    let msg = e.message || 'Unknown error';
+    if (msg.includes('API_KEY_INVALID') || msg.includes('API key')) {
+      msg = 'Invalid API key. Check your key in Settings.';
+    } else if (msg.includes('QUOTA') || msg.includes('quota')) {
+      msg = 'API quota exceeded. Try again in a minute.';
+    } else if (msg.toLowerCase().includes('json') || e instanceof SyntaxError) {
+      msg = 'Gemini returned unexpected format. Try again or check team name spelling.';
+    }
+    setAutofillStatus('err', '❌', msg);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function setAutofillStatus(type, icon, msg) {
+  const el = document.getElementById('autofillStatus');
+  el.className = 'autofill-status ' + type;
+  el.innerHTML = `<span class="${type==='running'?'spin':''}">${icon}</span><span>${msg}</span>`;
+}
+
+// ── APPLY PARSED DATA INTO ALL FORM FIELDS ──
+function applyAutofillData(data, nameA, nameB) {
+  const errors = [];
+
+  // Team names
+  if (data.homeTeam) { document.getElementById('teamAName').value = data.homeTeam; state.teamAName = data.homeTeam; }
+  if (data.awayTeam) { document.getElementById('teamBName').value = data.awayTeam; state.teamBName = data.awayTeam; document.getElementById('teamBNameTop').value = data.awayTeam; }
+
+  // ── Home form ──
+  if (Array.isArray(data.homeForm) && data.homeForm.length > 0) {
+    const rows = data.homeForm.slice(0, 6);
+    rows.forEach((match, i) => {
+      const g = state.gamesA[i];
+      g.gf = typeof match.gf === 'number' ? Math.max(0, Math.round(match.gf)) : null;
+      g.ga = typeof match.ga === 'number' ? Math.max(0, Math.round(match.ga)) : null;
+      g.venue = ['H','A','N'].includes(match.venue) ? match.venue : 'H';
+      g.sot = typeof match.sot === 'number' ? Math.max(0, Math.round(match.sot)) : null;
+      if (g.gf !== null && g.ga !== null) {
+        g.result = g.gf > g.ga ? 'W' : g.gf < g.ga ? 'L' : 'D';
+      } else {
+        g.result = match.result || '';
+      }
+    });
+    // fill remaining rows as empty
+    for (let i = rows.length; i < 6; i++) {
+      state.gamesA[i] = {gf:null,ga:null,venue:'H',sot:null,result:''};
+    }
+  }
+
+  // ── Away form ──
+  if (Array.isArray(data.awayForm) && data.awayForm.length > 0) {
+    const rows = data.awayForm.slice(0, 6);
+    rows.forEach((match, i) => {
+      const g = state.gamesB[i];
+      g.gf = typeof match.gf === 'number' ? Math.max(0, Math.round(match.gf)) : null;
+      g.ga = typeof match.ga === 'number' ? Math.max(0, Math.round(match.ga)) : null;
+      g.venue = ['H','A','N'].includes(match.venue) ? match.venue : 'A';
+      g.sot = typeof match.sot === 'number' ? Math.max(0, Math.round(match.sot)) : null;
+      if (g.gf !== null && g.ga !== null) {
+        g.result = g.gf > g.ga ? 'W' : g.gf < g.ga ? 'L' : 'D';
+      } else {
+        g.result = match.result || '';
+      }
+    });
+    for (let i = rows.length; i < 6; i++) {
+      state.gamesB[i] = {gf:null,ga:null,venue:'A',sot:null,result:''};
+    }
+  }
+
+  // ── Standings ──
+  // For cup/international fixtures, skip standing data entirely —
+  // league position is meaningless across divisions and misleads the model
+  const _isCup = isLeagueCup() || (data.competition || '').toLowerCase().match(/cup|fa cup|efl cup|copa|coupe|pokal|coppa|champions|europa|conference|world cup|nations|friendly|olympic|afcon|international/i);
+  if (!_isCup) {
+    const sA = data.homeStanding || {};
+    const sB = data.awayStanding || {};
+    state.standA = {
+      pos: sA.pos || null,
+      total: sA.totalTeams || sB.totalTeams || null,
+      mp: sA.mp || null, w: sA.w || null, d: sA.d || null, l: sA.l || null
+    };
+    state.standB = {
+      pos: sB.pos || null,
+      total: sA.totalTeams || sB.totalTeams || null,
+      mp: sB.mp || null, w: sB.w || null, d: sB.d || null, l: sB.l || null
+    };
+  } else {
+    // Cup fixture — clear any previously filled standing data
+    state.standA = {pos:null,total:null,mp:null,w:null,d:null,l:null};
+    state.standB = {pos:null,total:null,mp:null,w:null,d:null,l:null};
+  }
+
+  // ── H2H ──
+  if (Array.isArray(data.h2h) && data.h2h.length > 0) {
+    data.h2h.slice(0,4).forEach((match, i) => {
+      // Resolve venue from Team A's perspective
+      // Gemini returns: homeTeam = who was home in THAT match; venue = 'H'/'A'/'N'
+      let venue = 'H';
+      if (match.venue === 'N' || match.neutral === true) {
+        venue = 'N';
+      } else {
+        const teamAFirst = (data.homeTeam || nameA).toLowerCase().split(' ')[0];
+        const matchHome  = (match.homeTeam || '').toLowerCase();
+        const isTeamAHome = matchHome.includes(teamAFirst) || teamAFirst.includes(matchHome.split(' ')[0]);
+        venue = isTeamAHome ? 'H' : 'A';
+      }
+      if (venue === 'H' || venue === 'N') {
+        // Team A was the home side — homeScore = Team A goals
+        state.h2hGames[i] = { a: match.homeScore ?? null, b: match.awayScore ?? null, venue };
+      } else {
+        // Team A was the away side — awayScore = Team A goals
+        state.h2hGames[i] = { a: match.awayScore ?? null, b: match.homeScore ?? null, venue };
+      }
+    });
+    for (let i = data.h2h.length; i < 4; i++) {
+      state.h2hGames[i] = {a:null, b:null, venue:'H'};
+    }
+  }
+
+  // ── Re-render all UI from state ──
+  buildGameInputs('A');
+  buildGameInputs('B');
+  buildH2HUI();
+
+  // Reload standing fields
+  document.getElementById('standPosA').value = state.standA.pos ?? '';
+  document.getElementById('standPosB').value = state.standB.pos ?? '';
+  document.getElementById('standTotal').value = state.standA.total ?? '';
+  document.getElementById('standMPA').value = state.standA.mp ?? '';
+  document.getElementById('standWA').value = state.standA.w ?? '';
+  document.getElementById('standDA').value = state.standA.d ?? '';
+  document.getElementById('standLA').value = state.standA.l ?? '';
+  document.getElementById('standMPB').value = state.standB.mp ?? '';
+  document.getElementById('standWB').value = state.standB.w ?? '';
+  document.getElementById('standDB').value = state.standB.d ?? '';
+  document.getElementById('standLB').value = state.standB.l ?? '';
+  updateStandingTeamLabels();
+  renderStandingSummary();
+  updateH2HSummary();
+  checkDataCompleteness();
+  saveState();
+
+  // ── Success message ──
+  const filled = [];
+  const hasForm = data.homeForm?.length > 0 && data.awayForm?.length > 0;
+  if (hasForm) filled.push(`6 matches for ${data.homeTeam||nameA} &amp; ${data.awayTeam||nameB}`);
+  if (!_isCup && (state.standA.mp || state.standA.pos)) filled.push('season records');
+  if (_isCup) filled.push('<span style="color:var(--yf)">standing skipped (cup fixture)</span>');
+  if (state.h2hGames.some(g => g.a !== null)) filled.push('H2H history');
+  const sotCountA = state.gamesA.filter(g=>g.sot!==null).length;
+  const sotCountB = state.gamesB.filter(g=>g.sot!==null).length;
+  if (sotCountA > 0 || sotCountB > 0) filled.push(`SoT data (${sotCountA+sotCountB} matches)`);
+
+  const noteText = data.notes ? `<br><small style="color:var(--mg)">${data.notes}</small>` : '';
+  const confColor = data.confidence === 'HIGH' ? 'var(--gf)' : data.confidence === 'MEDIUM' ? 'var(--yf)' : 'var(--rf)';
+  setAutofillStatus('ok',
+    '✅',
+    `Filled: ${filled.join(', ')}. Data confidence: <strong style="color:${confColor}">${data.confidence||'—'}</strong>. ` +
+    `Review &amp; correct any errors, then select the competition and run analysis.${noteText}`
+  );
+
+  // suggest league if detected
+  if (data.competition) {
+    const comp = data.competition.toLowerCase();
+    const leagueEl = document.getElementById('leagueSelect');
+    const options = Array.from(leagueEl.options);
+    const match = options.find(o => o.value.toLowerCase().includes(comp.split(' ')[0]) || comp.includes(o.value.toLowerCase().split(' ')[0]));
+    if (match && match.value !== leagueEl.value) {
+      // show a suggestion rather than auto-selecting (user should confirm)
+      setAutofillStatus('ok',
+        '✅',
+        `Filled: ${filled.join(', ')}.${noteText} <br><span style="color:var(--ac2)">💡 Competition detected: <strong>${data.competition}</strong> — scroll up and select it in the League dropdown.</span>`
+      );
+    }
+  }
+}
+
+// ─── CUP / CROSS-DIVISION DETECTION ───────────────────────────────────────
+// Returns true when the selected competition is a cup, international tournament,
+// or any cross-division competition where league standing is not meaningful.
+function isLeagueCup() {
+  const L = LEAGUES[state.league] || {};
+  return L.isCup === true || state.knockoutMode;
+}
+
+// Returns a warning message if two teams from very different tiers are playing
+// This is GabGate's "quality gap" warning — the model can't see division levels
+function getQualityGapWarning() {
+  // Only meaningful when user has entered standing data with positions
+  const sA = state.standA, sB = state.standB;
+  if (!sA.pos || !sB.pos || !sA.total || !sB.total) return null;
+  // If both in same division (same total) no cross-div concern
+  if (sA.total === sB.total) return null;
+  return null; // can't determine tier gap from position alone without knowing which divisions
+}
+
+function getEffectiveLeague() {
+  const base = LEAGUES[state.league] || LEAGUES['Unknown / Other League'];
+  if (!state.knockoutMode) return Object.assign({}, base, { goalSuppression: 1.0 });
+  return Object.assign({}, base, {
+    rho: +(base.rho - 0.03).toFixed(3),
+    homeAdv: +(base.homeAdv * 0.7).toFixed(3),
+    goalSuppression: 0.90, // knockout matches run ~8-10% lower combined goals than league play
+  });
+}
+
+function updateLeagueChip() {
+  const wrap = document.getElementById('leagueChipWrap');
+  const L = getEffectiveLeague();
+  const chips = [];
+  if (state.knockoutMode) chips.push('<span class="chip purple">🏆 Knockout Mode — thresholds tightened</span>');
+  if (state.neutralVenue) chips.push('<span class="chip amber">⚪ Neutral Venue — home edge removed</span>');
+  const avgTotal = ((L.avgHomeGF + L.avgAwayGF) * (L.goalSuppression || 1)).toFixed(2);
+  chips.push(`<span class="chip green">📊 League avg: ${avgTotal} goals/game</span>`);
+  wrap.innerHTML = chips.join(' ');
+}
+
+function onInputChange() {
+  state.teamAName = document.getElementById('teamAName').value || 'HOME TEAM';
+  if (typeof updateStandingTeamLabels === 'function') updateStandingTeamLabels();
+  state.teamBName = document.getElementById('teamBName').value || 'AWAY TEAM';
+  state.restA = document.getElementById('restA').value === '' ? null : parseFloat(document.getElementById('restA').value);
+  state.restB = document.getElementById('restB').value === '' ? null : parseFloat(document.getElementById('restB').value);
+  state.injA = document.getElementById('injA').value === '' ? null : parseInt(document.getElementById('injA').value);
+  state.injB = document.getElementById('injB').value === '' ? null : parseInt(document.getElementById('injB').value);
+  state.motivation = document.getElementById('motivation').value;
+  state.oddsHome = document.getElementById('oddsHome').value === '' ? null : parseFloat(document.getElementById('oddsHome').value);
+  state.oddsDraw = document.getElementById('oddsDraw').value === '' ? null : parseFloat(document.getElementById('oddsDraw').value);
+  state.oddsAway = document.getElementById('oddsAway').value === '' ? null : parseFloat(document.getElementById('oddsAway').value);
+  state.oddsOver25 = document.getElementById('oddsOver25').value === '' ? null : parseFloat(document.getElementById('oddsOver25').value);
+  saveState();
+}
+
+function checkDataCompleteness() {
+  const aComplete = state.gamesA.every(g => g.gf !== null && g.ga !== null);
+  const bComplete = state.gamesB.every(g => g.gf !== null && g.ga !== null);
+  const elA = document.getElementById('teamADataCheck');
+  const elB = document.getElementById('teamBDataCheck');
+  if (elA) {
+    elA.className = `data-check ${aComplete ? 'ok' : 'bad'}`;
+    elA.textContent = aComplete ? '✅ Home team data complete' : '⛔ Fill all 6 matches (GF + GA required)';
+  }
+  if (elB) {
+    elB.className = `data-check ${bComplete ? 'ok' : 'bad'}`;
+    elB.textContent = bComplete ? '✅ Away team data complete' : '⛔ Fill all 6 matches (GF + GA required)';
+  }
+  return aComplete && bComplete;
+}
+
+function onLeagueChange() {
+  state.league = document.getElementById('leagueSelect').value;
+  updateLeagueChip();
+  updateStandingCardVisibility();
+  saveState();
+}
+
+function updateStandingCardVisibility() {
+  const card = document.getElementById('standingCard');
+  if (!card) return;
+  const isCup = isLeagueCup();
+  // Update the LEAGUE FIXTURES ONLY badge colour
+  const badge = card.querySelector('span[style*="93C5FD"]');
+  if (badge) {
+    badge.textContent = isCup ? '⛔ CUP — SKIP THIS SECTION' : 'LEAGUE FIXTURES ONLY';
+    badge.style.color = isCup ? '#FCA5A5' : '#93C5FD';
+    badge.style.fontWeight = '800';
+  }
+  // Show a warning overlay when cup is selected
+  let cupNote = document.getElementById('standingCupNote');
+  if (!cupNote) {
+    cupNote = document.createElement('div');
+    cupNote.id = 'standingCupNote';
+    cupNote.className = 'callout red';
+    cupNote.style.margin = '0 0 10px';
+    const body = card.querySelector('.card-body');
+    if (body) body.insertBefore(cupNote, body.firstChild);
+  }
+  if (isCup) {
+    cupNote.style.display = 'flex';
+    cupNote.innerHTML = '<span>⛔</span><div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">Skip for Cup Fixtures</strong>League standing is NOT meaningful in cup competitions — teams from different divisions play each other. Leave all fields in this section empty. Autofill will also skip this section automatically for cup fixtures.</div>';
+  } else {
+    cupNote.style.display = 'none';
+  }
+}
+function onKnockoutModeChange() {
+  state.knockoutMode = document.getElementById('knockoutMode').checked;
+  updateLeagueChip();
+  updateStandingCardVisibility();
+  saveState();
+}
+function updateStandingTeamLabels() {
+  const nA = state.teamAName || 'HOME TEAM', nB = state.teamBName || 'AWAY TEAM';
+  document.getElementById('standTeamLabelA').textContent = '🏠 ' + nA + ' — Season Record';
+  document.getElementById('standTeamLabelB').textContent = '✈️ ' + nB + ' — Season Record';
+  document.getElementById('standLabelA').textContent = nA + ' — League Pos';
+  document.getElementById('standLabelB').textContent = nB + ' — League Pos';
+}
+
+function getStandingTier(pos, total) {
+  if (!pos || !total) return null;
+  const pct = pos / total;
+  if (pct <= 0.15) return 'top'; // top 15% = title contenders
+  if (pct <= 0.35) return 'upper'; // upper mid
+  if (pct <= 0.65) return 'mid'; // mid table
+  if (pct <= 0.85) return 'lower'; // lower mid
+  return 'bottom'; // bottom 15% = relegation zone
+}
+
+function getStandingContext() {
+  // returns a structured object for use by the analysis engine
+  const sA = state.standA, sB = state.standB;
+  if (!sA.pos && !sA.mp && !sB.pos && !sB.mp) return null;
+  const total = sA.total; // single shared field — same division for both teams
+  const tierA = sA.pos && total ? getStandingTier(sA.pos, total) : null;
+  const tierB = sB.pos && total ? getStandingTier(sB.pos, total) : null;
+  const wrA = sA.mp > 0 ? sA.w/sA.mp : null;
+  const wrB = sB.mp > 0 ? sB.w/sB.mp : null;
+  // season win-rate vs short-form win-rate divergence (early warning of false form)
+  let formDivA = null, formDivB = null;
+  if (wrA !== null) { const shortA = state.gamesA.filter(g=>g.gf>g.ga).length/NUM_GAMES; formDivA = shortA - wrA; }
+  if (wrB !== null) { const shortB = state.gamesB.filter(g=>g.gf>g.ga).length/NUM_GAMES; formDivB = shortB - wrB; }
+  return { sA, sB, tierA, tierB, wrA, wrB, formDivA, formDivB, total };
+}
+
+function renderStandingSummary() {
+  const sA = state.standA, sB = state.standB;
+  const row = document.getElementById('standingSummaryRow');
+  const alertBox = document.getElementById('standContextAlert');
+  if (!sA.pos && !sA.mp && !sB.pos && !sB.mp) { row.style.display = 'none'; return; }
+  row.style.display = 'block';
+
+  const nA = state.teamAName || 'HOME', nB = state.teamBName || 'AWAY';
+  const total = sA.total; // single shared field — same division for both teams
+
+  // standing chips
+  const chipA = document.getElementById('standChipA');
+  const chipB = document.getElementById('standChipB');
+  const matchup = document.getElementById('standMatchup');
+
+  if (sA.pos && total) {
+    const tier = getStandingTier(sA.pos, total);
+    const tierLabel = {top:'Title Zone',upper:'Upper Half',mid:'Mid Table',lower:'Lower Half',bottom:'Drop Zone'}[tier];
+    const tierColor = {top:'var(--ac2)',upper:'var(--gf)',mid:'var(--mg)',lower:'var(--yf)',bottom:'var(--rf)'}[tier];
+    chipA.innerHTML = `<div class="market-cell-label">${nA}</div><div class="market-cell-val" style="font-size:15px;color:${tierColor}">P${sA.pos}</div><div style="font-size:10px;color:${tierColor};margin-top:2px">${tierLabel}</div>`;
+  } else if (sA.mp) {
+    const wr = sA.mp > 0 ? ((sA.w/sA.mp)*100).toFixed(0)+'%' : '—';
+    chipA.innerHTML = `<div class="market-cell-label">${nA}</div><div class="market-cell-val" style="font-size:14px">${sA.w}W ${sA.d}D ${sA.l}L</div><div style="font-size:10px;color:var(--mg)">Win rate ${wr}</div>`;
+  } else chipA.innerHTML = '';
+
+  if (sB.pos && total) {
+    const tier = getStandingTier(sB.pos, total);
+    const tierLabel = {top:'Title Zone',upper:'Upper Half',mid:'Mid Table',lower:'Lower Half',bottom:'Drop Zone'}[tier];
+    const tierColor = {top:'var(--ac2)',upper:'var(--gf)',mid:'var(--mg)',lower:'var(--yf)',bottom:'var(--rf)'}[tier];
+    chipB.innerHTML = `<div class="market-cell-label">${nB}</div><div class="market-cell-val" style="font-size:15px;color:${tierColor}">P${sB.pos}</div><div style="font-size:10px;color:${tierColor};margin-top:2px">${tierLabel}</div>`;
+  } else if (sB.mp) {
+    const wr = sB.mp > 0 ? ((sB.w/sB.mp)*100).toFixed(0)+'%' : '—';
+    chipB.innerHTML = `<div class="market-cell-label">${nB}</div><div class="market-cell-val" style="font-size:14px">${sB.w}W ${sB.d}D ${sB.l}L</div><div style="font-size:10px;color:var(--mg)">Win rate ${wr}</div>`;
+  } else chipB.innerHTML = '';
+
+  // auto-detect matchup type
+  const tierA = sA.pos && total ? getStandingTier(sA.pos, total) : null;
+  const tierB = sB.pos && total ? getStandingTier(sB.pos, total) : null;
+  let matchupLabel = '', matchupColor = 'var(--mg)', contextMsg = null;
+
+  if (tierA && tierB) {
+    if (tierA === 'top' && tierB === 'top') { matchupLabel = '🔥 Title Six-Pointer'; matchupColor = 'var(--ac2)'; contextMsg = {type:'warn',msg:'Both sides are in the top tier of the table — classic six-pointer. Expect cautious, tightly-contested football. Goal totals often run under league average in these fixtures.'}; }
+    else if (tierA === 'bottom' && tierB === 'bottom') { matchupLabel = '⚠️ Relegation Six-Pointer'; matchupColor = 'var(--rf)'; contextMsg = {type:'warn',msg:'Both sides are in the bottom tier — relegation six-pointer. High motivation, high stakes, typically tight and unpredictable. Historically slightly draw-prone.'}; }
+    else if ((tierA === 'top' && tierB === 'bottom') || (tierA === 'bottom' && tierB === 'top')) { matchupLabel = '📊 Large Quality Gap'; matchupColor = 'var(--gf)'; contextMsg = {type:'info',msg:'Significant table-position gap between the two sides. The model raw form advantage for the higher-placed team is consistent with the season-wide picture.'}; }
+    else if (tierA === 'top' && tierB === 'upper') { matchupLabel = '📊 Top vs Upper Half'; matchupColor = 'var(--ac2)'; }
+    else { matchupLabel = '📋 Mid-Table Fixture'; matchupColor = 'var(--mg)'; }
+  } else if (sA.mp && sB.mp) {
+    const wrA = sA.mp > 0 ? sA.w/sA.mp : 0, wrB = sB.mp > 0 ? sB.w/sB.mp : 0;
+    const gapPct = Math.abs(wrA - wrB) * 100;
+    if (gapPct >= 25) { matchupLabel = `📊 Win-rate gap ${gapPct.toFixed(0)}%`; matchupColor = 'var(--ac2)'; }
+    else { matchupLabel = '📋 Closely Matched'; matchupColor = 'var(--mg)'; }
+  }
+  matchup.innerHTML = matchupLabel ? `<div class="market-cell-val" style="font-size:11px;color:${matchupColor};line-height:1.3">${matchupLabel}</div>` : '';
+
+  if (contextMsg) {
+    alertBox.style.display = 'flex';
+    alertBox.className = 'callout ' + (contextMsg.type === 'warn' ? 'amber' : 'blue');
+    alertBox.innerHTML = `<span>📋</span><div><strong style="display:block;font-size:11px;text-transform:uppercase;margin-bottom:2px">Table Context</strong>${contextMsg.msg}</div>`;
+  } else { alertBox.style.display = 'none'; }
+}
+
+function onStandingChange() {
+  const intOrNull = id => { const v = document.getElementById(id); return (!v || v.value === '') ? null : parseInt(v.value); };
+  const sharedTotal = intOrNull('standTotal'); // single shared field — both teams in same division
+  state.standA = {
+    pos: intOrNull('standPosA'), total: sharedTotal,
+    mp: intOrNull('standMPA'), w: intOrNull('standWA'),
+    d: intOrNull('standDA'), l: intOrNull('standLA')
+  };
+  state.standB = {
+    pos: intOrNull('standPosB'), total: sharedTotal,
+    mp: intOrNull('standMPB'), w: intOrNull('standWB'),
+    d: intOrNull('standDB'), l: intOrNull('standLB')
+  };
+  renderStandingSummary();
+  saveState();
+}
+
+function getH2HStats() {
+  const complete = state.h2hGames.filter(g => g.a !== null && g.b !== null);
+  if (!complete.length) return null;
+  const totals   = complete.map(g => g.a + g.b);
+  const bttsArr  = complete.map(g => (g.a >= 1 && g.b >= 1) ? 1 : 0);
+  const aWins    = complete.filter(g => g.a > g.b).length;
+  const bWins    = complete.filter(g => g.b > g.a).length;
+  const draws    = complete.filter(g => g.a === g.b).length;
+  const avgTotal = parseFloat((totals.reduce((s,v)=>s+v,0)/totals.length).toFixed(2));
+  const bttsRate = parseFloat((bttsArr.reduce((s,v)=>s+v,0)/bttsArr.length*100).toFixed(0));
+  let trend = 'stable';
+  if (totals.length >= 2) {
+    const diff = totals[0] - totals[totals.length - 1];
+    trend = diff >= 2 ? 'rising' : diff <= -2 ? 'falling' : 'stable';
+  }
+  const dominant = aWins > bWins ? 'A' : bWins > aWins ? 'B' : 'even';
+
+  // Venue split: H = Team A was home, A = Team B was home, N = neutral
+  const homeVenueGames  = complete.filter(g => (g.venue||'H') === 'H');
+  const awayVenueGames  = complete.filter(g => (g.venue||'H') === 'A');
+  const neutralGames    = complete.filter(g => (g.venue||'H') === 'N');
+  // Win % for Team A in each venue context
+  const homeVenueWinPct = homeVenueGames.length
+    ? Math.round(homeVenueGames.filter(g => g.a > g.b).length / homeVenueGames.length * 100) : null;
+  const awayVenueWinPct = awayVenueGames.length
+    ? Math.round(awayVenueGames.filter(g => g.a > g.b).length / awayVenueGames.length * 100) : null;
+  const venueSplit = { H: homeVenueGames.length, A: awayVenueGames.length, N: neutralGames.length };
+
+  return {
+    complete, totals, aWins, bWins, draws, avgTotal, bttsRate, trend, dominant,
+    count: complete.length,
+    homeVenueGames, awayVenueGames, neutralGames,
+    homeVenueWinPct, awayVenueWinPct, venueSplit
+  };
+}
+
+
+
+
+
+</script>
+
+
+</body>
+</html>
