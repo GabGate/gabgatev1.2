@@ -895,7 +895,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     </div>
     <div class="card-body">
       <p style="font-size:12.5px;color:var(--gc);margin-bottom:12px;line-height:1.6">
-        GabGate uses <strong style="color:var(--ac2)">Google Gemini 3.6 Flash</strong> with built-in web search to automatically fetch team form, SoT, season records and H2H data from ESPN, FotMob, Sofascore, FBref and more — and pre-fill every input field for you.<br><br>
+        GabGate uses <strong style="color:var(--ac2)">Google Gemini 2.5 Flash</strong> with built-in web search to automatically fetch team form, SoT, season records and H2H data from ESPN, FotMob, Sofascore, FBref and more — and pre-fill every input field for you.<br><br>
         Get a free API key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#C4B5FD;text-decoration:underline">aistudio.google.com/apikey</a> (Google AI Studio — free tier, no card required).
       </p>
       <label class="field-label">Gemini API Key</label>
@@ -2442,7 +2442,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 // ═══════════════════════════════════════════════════════════════════════
 // GEMINI AUTOFILL ENGINE — GabGate v1.2
-// Uses Gemini 3.6 Flash with Google Search grounding to fetch team data
+// Uses Gemini 2.5 Flash with Google Search grounding to fetch team data
 // ═══════════════════════════════════════════════════════════════════════
 
 // ── API KEY MANAGEMENT ──
@@ -2492,7 +2492,7 @@ async function testApiConnection() {
   try {
     const resp = await callGemini('Say exactly: GABGATE_OK', false, key);
     if (resp.includes('GABGATE_OK')) {
-      chip.className = 'api-status-chip ok'; chip.innerHTML = '✅ &nbsp;Connected — Gemini 3.6 Flash responding';
+      chip.className = 'api-status-chip ok'; chip.innerHTML = '✅ &nbsp;Connected — Gemini 2.5 Flash responding';
       result.style.color = 'var(--gf)'; result.textContent = '✅ Connection successful. Autofill is ready to use.';
     } else {
       throw new Error('Unexpected response: ' + resp.slice(0,100));
