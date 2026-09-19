@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gabgate-v1-2-final-cache-v1';
+const CACHE_NAME = 'gabgate-v1-2-final-cache-v2';
 const ASSETS = ['./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install', e => {
