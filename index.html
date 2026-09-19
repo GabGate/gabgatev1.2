@@ -2583,11 +2583,11 @@ Schema:
   "homeTeam": "${nameA}",
   "awayTeam": "${nameB}",
   "homeForm": [
-    {"gf":2,"ga":1,"venue":"H","opponent":"Real Madrid","date":"15 Jun 2026"},
-    {"gf":0,"ga":0,"venue":"A","opponent":"Barcelona","date":"08 Jun 2026"}
+    {"gf":2,"ga":1,"venue":"H","opponent":"Real Madrid","date":"26 Aug 2026"},
+    {"gf":0,"ga":0,"venue":"A","opponent":"Barcelona","date":"23 Aug 2026"}
   ],
   "awayForm": [
-    {"gf":1,"ga":2,"venue":"A","opponent":"Arsenal","date":"14 Jun 2026"}
+    {"gf":1,"ga":2,"venue":"A","opponent":"Arsenal","date":"29 Aug 2026"}
   ],
   "homeStanding": {"pos":3,"mp":28,"w":16,"d":6,"l":6,"totalTeams":20},
   "awayStanding": {"pos":9,"mp":28,"w":11,"d":8,"l":9,"totalTeams":20},
@@ -2611,7 +2611,7 @@ RULES:
   Europa League, World Cup, Friendlies etc.) — in these competitions teams from different
   divisions/countries play each other and league position is meaningless.
 - Only fill standing fields for proper league fixtures where BOTH teams play in the SAME league.
-- League standing (Played, Won, Drawn, Lost, League Position) MUST reflect the current 2026/2027 season league table.
+- League standing (Played, Won, Drawn, Lost, League Position) MUST reflect the current season league table.
 - Do NOT invent scores. If fewer than 6 matches found, include only real ones.
 - Return ONLY the raw JSON object.`;
 
@@ -2648,8 +2648,8 @@ ${matchList}
 Return ONLY a raw JSON array — NO markdown fences, NO backticks, NO explanation.
 Each entry must follow this exact format:
 [
-  {"team":"${nameA}","opponent":"Real Madrid","date":"15 Jun 2026","sot":5},
-  {"team":"${nameA}","opponent":"Barcelona","date":"08 Jun 2026","sot":3},
+  {"team":"${nameA}","opponent":"Real Madrid","date":"26 Aug 2026","sot":5},
+  {"team":"${nameB}","opponent":"Barcelona","date":"23 Aug 2026","sot":3},
   ...
 ]
 
